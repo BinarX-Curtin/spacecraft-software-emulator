@@ -31,6 +31,7 @@ class FakeSerialComunication
   //   return binarx_serial_interface::SerialStatus::Success;
   // };
 };
+
 class SerialCommunicationMock
     : public binarx_serial_interface::SerialCommunicationInterface {
  public:
@@ -62,7 +63,18 @@ class GpioMock : public binarx_gpio_interface::GpioInterface {
   MOCK_METHOD(void, SetHigh, (), (override));
   MOCK_METHOD(void, SetLow, (), (override));
   MOCK_METHOD(void, TogglePin, (), (override));
+  MOCK_METHOD(bool, IsPinHigh, (), (override));
 };
+
+MATCHER_P2(ArraysAreEqual, array, size,
+           "elements are equal [%(array)s, %(size)s]") {
+  for (uint16_t i = 0; i < size; i++) {
+    if (arg[i] != array[i]) {
+      return false;
+    }
+  }
+  return true;
+}
 
 class EmulatorTest : public testing::Test {
  protected:
@@ -71,13 +83,14 @@ class EmulatorTest : public testing::Test {
   SerialCommunicationMock uart_com_mock;
   GpioMock gpio_mock;
   binarx_emulator::BinarXEmulator emulator = binarx_emulator::BinarXEmulator(
-      &spi_com_mock, &gpio_mock, &uart_com_mock);
+      &spi_com_mock, &uart_com_mock, &gpio_mock);
 };
 
 TEST_F(EmulatorTest, SerialComunicationSuccess) {
   // Given a spi returns success
   spi_com_mock.DelegateToFake();
 
+  // EXPECT_CALL(payload_ready_gpio_mock, IsPinHigh()).WillOnce(Return(true));
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
   EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(1);
 
@@ -85,7 +98,7 @@ TEST_F(EmulatorTest, SerialComunicationSuccess) {
   emulator.SpiRun();
 }
 
-TEST_F(EmulatorTest, DataInVsOutValueCheck) {
+TEST_F(EmulatorTest, DataSPIInEqualsUartOut) {
   // Given a buffer with data
   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
@@ -97,8 +110,10 @@ TEST_F(EmulatorTest, DataInVsOutValueCheck) {
           SetArrayArgument<0>(data_buffer, data_buffer + sizeof(data_buffer)),
           Return(binarx_serial_interface::SerialStatus::Success)));
 
-  // EXPECT_CALL(uart_com_mock, Transmit(ElementsAreArray(data_buffer), _, _))
-  //     .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+  EXPECT_CALL(uart_com_mock,
+              Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
+                       sizeof(data_buffer), _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
   // When
   emulator.SpiRun();
 }

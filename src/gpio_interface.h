@@ -15,5 +15,6 @@ class GpioInterface {
   virtual void SetHigh() = 0;
   virtual void SetLow() = 0;
   virtual void TogglePin() = 0;
+  virtual bool IsPinHigh() = 0;
 };
 }  // namespace binarx_gpio_interface

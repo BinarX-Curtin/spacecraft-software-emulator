@@ -19,9 +19,16 @@ void BinarXEmulator::SpiRun() {
   binarx_serial_interface::SerialStatus serial_status =
       spi_comunication_->Receive(receive_buffer, kMaxPayloadDataLength,
                                  kDefaultCommunicationDelay);
-
-  serial_status = uart_comunication_->Transmit(
-      receive_buffer, kMaxPayloadDataLength, kDefaultCommunicationDelay);
+  if (serial_status == binarx_serial_interface::SerialStatus::Success) {
+    serial_status = uart_comunication_->Transmit(
+        receive_buffer, kMaxPayloadDataLength, kDefaultCommunicationDelay);
+  } else {
+    uint8_t error_msg_spi[] =
+        "ERROR: Sorry the message was not received correctly by the Binar "
+        "Emulator \n ";
+    uart_comunication_->Transmit(error_msg_spi, sizeof(error_msg_spi),
+                                 kDefaultCommunicationDelay);
+  }
 }
 
 void BinarXEmulator::ToggleYellowLed() {

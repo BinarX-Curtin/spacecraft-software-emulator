@@ -14,17 +14,17 @@
 namespace binarx_emulator {
 
 constexpr uint16_t kMaxPayloadDataLength = 500;
-const uint16_t kDefaultCommunicationDelay = 200;
+constexpr uint16_t kDefaultCommunicationDelay = 200;
 
 class BinarXEmulator {
  public:
   BinarXEmulator(
       binarx_serial_interface::SerialCommunicationInterface* spi_communication,
-      binarx_gpio_interface::GpioInterface* gpio_object,
-      binarx_serial_interface::SerialCommunicationInterface* uart_communication)
+      binarx_serial_interface::SerialCommunicationInterface* uart_communication,
+      binarx_gpio_interface::GpioInterface* gpio_object)
       : spi_comunication_(spi_communication),
-        gpio_controller_(gpio_object),
-        uart_comunication_(uart_communication){};
+        uart_comunication_(uart_communication),
+        gpio_controller_(gpio_object){};
 
   void SpiRun();
   void ToggleYellowLed();
@@ -32,8 +32,8 @@ class BinarXEmulator {
 
  private:
   binarx_serial_interface::SerialCommunicationInterface* spi_comunication_;
-  binarx_gpio_interface::GpioInterface* gpio_controller_;
   binarx_serial_interface::SerialCommunicationInterface* uart_comunication_;
+  binarx_gpio_interface::GpioInterface* gpio_controller_;
 };
 
 }  // namespace binarx_emulator
