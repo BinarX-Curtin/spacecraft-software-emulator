@@ -60,10 +60,12 @@ class SerialCommunicationMock
 
 class GpioMock : public binarx_gpio_interface::GpioInterface {
  public:
-  MOCK_METHOD(void, SetHigh, (), (override));
-  MOCK_METHOD(void, SetLow, (), (override));
-  MOCK_METHOD(void, TogglePin, (), (override));
-  MOCK_METHOD(bool, IsPinHigh, (), (override));
+  MOCK_METHOD(void, SetHigh, (binarx_gpio_interface::GpioSelector), (override));
+  MOCK_METHOD(void, SetLow, (binarx_gpio_interface::GpioSelector), (override));
+  MOCK_METHOD(void, TogglePin, (binarx_gpio_interface::GpioSelector),
+              (override));
+  MOCK_METHOD(void, WaitForInterrupt, (binarx_gpio_interface::GpioSelector),
+              (override));
 };
 
 MATCHER_P2(ArraysAreEqual, array, size,
@@ -86,11 +88,16 @@ class EmulatorTest : public testing::Test {
       &spi_com_mock, &uart_com_mock, &gpio_mock);
 };
 
-TEST_F(EmulatorTest, SerialComunicationSuccess) {
+TEST_F(EmulatorTest, SPIComunicationSuccess) {
   // Given a spi returns success
   spi_com_mock.DelegateToFake();
 
-  // EXPECT_CALL(payload_ready_gpio_mock, IsPinHigh()).WillOnce(Return(true));
+  EXPECT_CALL(gpio_mock, WaitForInterrupt(
+                             binarx_gpio_interface::GpioSelector::PayloadReady))
+      .Times(1);
+
+
+
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
   EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(1);
 
@@ -98,7 +105,7 @@ TEST_F(EmulatorTest, SerialComunicationSuccess) {
   emulator.SpiRun();
 }
 
-TEST_F(EmulatorTest, DataSPIInEqualsUartOut) {
+TEST_F(EmulatorTest, SPIInEqualsUartOut) {
   // Given a buffer with data
   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
@@ -119,7 +126,9 @@ TEST_F(EmulatorTest, DataSPIInEqualsUartOut) {
 }
 
 TEST_F(EmulatorTest, ToggleYellowLed) {
-  EXPECT_CALL(gpio_mock, TogglePin()).Times(1);
+  EXPECT_CALL(gpio_mock,
+              TogglePin(binarx_gpio_interface::GpioSelector::YellowLed))
+      .Times(1);
 
   emulator.ToggleYellowLed();
 }

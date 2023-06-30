@@ -16,9 +16,15 @@ namespace binarx_emulator {
 
 void BinarXEmulator::SpiRun() {
   uint8_t receive_buffer[kMaxPayloadDataLength];
+
+  gpio_controller_->WaitForInterrupt(
+      binarx_gpio_interface::GpioSelector::
+          PayloadReady); 
+
   binarx_serial_interface::SerialStatus serial_status =
       spi_comunication_->Receive(receive_buffer, kMaxPayloadDataLength,
                                  kDefaultCommunicationDelay);
+
   if (serial_status == binarx_serial_interface::SerialStatus::Success) {
     serial_status = uart_comunication_->Transmit(
         receive_buffer, kMaxPayloadDataLength, kDefaultCommunicationDelay);
@@ -32,7 +38,7 @@ void BinarXEmulator::SpiRun() {
 }
 
 void BinarXEmulator::ToggleYellowLed() {
-  gpio_controller_->TogglePin();
+  gpio_controller_->TogglePin(binarx_gpio_interface::GpioSelector::YellowLed);
   std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
