@@ -96,8 +96,6 @@ TEST_F(EmulatorTest, SPIComunicationSuccess) {
                              binarx_gpio_interface::GpioSelector::PayloadReady))
       .Times(1);
 
-
-
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
   EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(1);
 
@@ -105,7 +103,7 @@ TEST_F(EmulatorTest, SPIComunicationSuccess) {
   emulator.SpiRun();
 }
 
-TEST_F(EmulatorTest, SPIInEqualsUartOut) {
+TEST_F(EmulatorTest, SpiInEqualsUartOut) {
   // Given a buffer with data
   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
@@ -120,6 +118,21 @@ TEST_F(EmulatorTest, SPIInEqualsUartOut) {
   EXPECT_CALL(uart_com_mock,
               Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
                        sizeof(data_buffer), _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+  // When
+  emulator.SpiRun();
+}
+
+TEST_F(EmulatorTest, SpiTimeOut) {
+  // Given a buffer with data
+  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+
+  EXPECT_CALL(spi_com_mock, Receive(_, _, _))
+      .WillOnce(DoAll(Return(binarx_serial_interface::SerialStatus::Timeout)));
+
+  EXPECT_CALL(
+      uart_com_mock,
+      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
   // When
   emulator.SpiRun();
