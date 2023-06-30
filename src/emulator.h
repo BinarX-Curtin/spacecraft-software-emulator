@@ -8,15 +8,13 @@
 #pragma once
 #include <stdint.h>
 
-#include <map>
-#include <string>
-
 #include "gpio_interface.h"
 #include "serial_communication_interface.h"
 
 namespace binarx_emulator {
 
-constexpr uint32_t kMaxDataLength = 17;
+constexpr uint16_t kMaxPayloadDataLength = 500;
+const uint16_t kDefaultCommunicationDelay = 200;
 
 class BinarXEmulator {
  public:
@@ -30,13 +28,12 @@ class BinarXEmulator {
 
   void SpiRun();
   void ToggleYellowLed();
+  void ButtonPressed();
 
  private:
-  std::map<std::string, std::string> error_strings_;
   binarx_serial_interface::SerialCommunicationInterface* spi_comunication_;
   binarx_gpio_interface::GpioInterface* gpio_controller_;
   binarx_serial_interface::SerialCommunicationInterface* uart_comunication_;
-  uint8_t receive_buffer_[kMaxDataLength];
 };
 
-}  // namespace binarx_emulator 
+}  // namespace binarx_emulator
