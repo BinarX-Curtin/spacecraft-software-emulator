@@ -9,9 +9,6 @@
 
 #include <math.h>
 
-#include <chrono>
-#include <thread>
-
 namespace binarx_emulator {
 
 void BinarXEmulator::SpiRun() {
@@ -39,7 +36,6 @@ void BinarXEmulator::SpiRun() {
 
 void BinarXEmulator::ToggleYellowLed() {
   gpio_controller_->TogglePin(binarx_gpio_interface::GpioSelector::YellowLed);
-  std::this_thread::sleep_for(std::chrono::seconds(1));
 }
 
 void BinarXEmulator::ButtonPressed() {
