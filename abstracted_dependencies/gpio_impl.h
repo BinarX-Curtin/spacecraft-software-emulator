@@ -13,11 +13,12 @@ namespace binarx_gpio_impl {
 
 class GpioImpl : public binarx_gpio_interface::GpioInterface {
  public:
-     GpioImpl(){};
+  GpioImpl(){};
   void SetHigh(binarx_gpio_interface::GpioSelector gpio);
   void SetLow(binarx_gpio_interface::GpioSelector gpio);
   void TogglePin(binarx_gpio_interface::GpioSelector gpio);
-  void WaitForInterrupt(binarx_gpio_interface::GpioSelector gpio);
+  binarx_gpio_interface::GpioStatus WaitForInterrupt(
+      binarx_gpio_interface::GpioSelector gpio, uint32_t timeout);
 
  private:
   uint16_t GetPin(binarx_gpio_interface::GpioSelector gpio);

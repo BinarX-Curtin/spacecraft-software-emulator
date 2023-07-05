@@ -64,7 +64,8 @@ class GpioMock : public binarx_gpio_interface::GpioInterface {
   MOCK_METHOD(void, SetLow, (binarx_gpio_interface::GpioSelector), (override));
   MOCK_METHOD(void, TogglePin, (binarx_gpio_interface::GpioSelector),
               (override));
-  MOCK_METHOD(void, WaitForInterrupt, (binarx_gpio_interface::GpioSelector),
+  MOCK_METHOD(binarx_gpio_interface::GpioStatus, WaitForInterrupt,
+              (binarx_gpio_interface::GpioSelector, uint32_t timeout),
               (override));
 };
 
@@ -92,8 +93,11 @@ TEST_F(EmulatorTest, SPIComunicationSuccess) {
   // Given a spi returns success
   spi_com_mock.DelegateToFake();
 
-  EXPECT_CALL(gpio_mock, WaitForInterrupt(
-                             binarx_gpio_interface::GpioSelector::PayloadReady))
+  EXPECT_CALL(
+      gpio_mock,
+      WaitForInterrupt(binarx_gpio_interface::GpioSelector::PayloadReady, _))
+      .Times(1);
+  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
@@ -134,6 +138,24 @@ TEST_F(EmulatorTest, SpiTimeOut) {
       uart_com_mock,
       Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+  // When
+  emulator.SpiRun();
+}
+TEST_F(EmulatorTest, WaitForInterruptTimeOut) {
+  // Given a buffer with data
+  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+
+  EXPECT_CALL(
+      gpio_mock,
+      WaitForInterrupt(binarx_gpio_interface::GpioSelector::PayloadReady, _))
+      .WillOnce(Return(binarx_gpio_interface::GpioStatus::Timeout));
+
+  // An error message will be sent by Uart
+  EXPECT_CALL(
+      uart_com_mock,
+      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
   // When
   emulator.SpiRun();
 }
