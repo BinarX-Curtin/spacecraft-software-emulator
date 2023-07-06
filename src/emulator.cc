@@ -47,8 +47,6 @@ void BinarXEmulator::SpiRun() {
     uart_comunication_->Transmit(error_msg_spi, sizeof(error_msg_spi),
                                  kDefaultCommunicationDelay);
   }
-  // Turn Red Led and payoad off
-  gpio_controller_->SetLow(binarx_gpio_interface::GpioSelector::RedLed);
   // Make sure the Green LED is off
   gpio_controller_->SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
 }
@@ -71,6 +69,9 @@ void BinarXEmulator::ButtonPressed() {
 
   // Run the SPI Receive Sequence
   SpiRun();
+
+  // Turn Red Led and payoad off as the payload request has finished
+  gpio_controller_->SetLow(binarx_gpio_interface::GpioSelector::RedLed);
 }
 
 }  // namespace binarx_emulator

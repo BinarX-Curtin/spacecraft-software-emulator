@@ -12,6 +12,11 @@
 #include <array>
 namespace binarx_serial_interface {
 
+/**
+ * @brief The Serial status is the possible return states from a Serial
+ * Comunication
+ *
+ */
 enum SerialStatus {
   Success,
   Error,
@@ -19,15 +24,32 @@ enum SerialStatus {
   Timeout,
 };
 
+/**
+ * @brief The Serial Comunication interface to allow for dependency injection
+ * and testing
+ *
+ */
 class SerialCommunicationInterface {
  public:
+  /**
+   * @brief Transmit the data through serial
+   *
+   * @param buffer A pointer to the start of the buffer
+   * @param size the size of the data
+   * @param timeout The time the Serial will wait for the transaction to start
+   * @return SerialStatus The status of the transaction
+   */
   virtual SerialStatus Transmit(uint8_t *buffer, uint16_t size,
                                 uint32_t timeout) = 0;
+  /**
+   * @brief Receive the data through serial
+   *
+   * @param receive_buffer A pointer to the start of the receiving buffer
+   * @param size the size of the data to receive
+   * @param timeout The time the Serial will wait for the transaction to start
+   * @return SerialStatus The status of the transaction
+   */
   virtual SerialStatus Receive(uint8_t *receive_buffer, uint16_t size,
                                uint32_t timeout) = 0;
-  //   virtual SerialStatus TransmitReceive(
-  //       std::array<uint8_t, kMaxPayloadDataLength> &transmit_buffer,
-  //       std::array<uint8_t, kMaxPayloadDataLength> &receive_buffer,
-  //       uint32_t timeout) = 0;
 };
 }  // namespace binarx_serial_interface

@@ -97,7 +97,12 @@ TEST_F(EmulatorTest, SPIComunicationSuccess) {
       gpio_mock,
       WaitForInterrupt(binarx_gpio_interface::GpioSelector::PayloadReady, _))
       .Times(1);
+
+  // When a transaction is successful the green Led will turn on
   EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
+      .Times(1);
+
+  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
@@ -141,6 +146,22 @@ TEST_F(EmulatorTest, SpiTimeOut) {
   // When
   emulator.SpiRun();
 }
+
+TEST_F(EmulatorTest, SpiReturnsError) {
+  // Given a buffer with data
+  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+
+  EXPECT_CALL(spi_com_mock, Receive(_, _, _))
+      .WillOnce(DoAll(Return(binarx_serial_interface::SerialStatus::Error)));
+
+  EXPECT_CALL(
+      uart_com_mock,
+      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+  // When
+  emulator.SpiRun();
+}
+
 TEST_F(EmulatorTest, WaitForInterruptTimeOut) {
   // Given a buffer with data
   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
@@ -169,9 +190,21 @@ TEST_F(EmulatorTest, ToggleYellowLed) {
 }
 
 TEST_F(EmulatorTest, ButtonPushedSuccess) {
-  // Given a spi returns success
+  // Given spi returns success
   spi_com_mock.DelegateToFake();
 
+  // Expect for the payload to be turned on, and then off
+  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::RedLed))
+      .Times(1);
+  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
+      .Times(1);
+
+  // Green LED is set high and low but we do not care how many times.
+  EXPECT_CALL(gpio_mock,
+              SetHigh(binarx_gpio_interface::GpioSelector::GreenLed));
+  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed));
+
+  // Expect an SPI receive and Uart Transmit transactions
   EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
   EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(2);
 
