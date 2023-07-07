@@ -8,8 +8,8 @@
 #pragma once
 #include <stdint.h>
 
-#include "gpio_interface.h"
-#include "serial_communication_interface.h"
+#include "abstraction_layer/gpio_interface.h"
+#include "abstraction_layer/serial_communication_interface.h"
 
 namespace binarx_emulator {
 

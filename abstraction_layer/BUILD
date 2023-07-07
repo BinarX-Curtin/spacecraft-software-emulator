@@ -1,5 +1,3 @@
-
-
 cc_library(
    name = "serial_communication_interface",
   hdrs = ["serial_communication_interface.h"],
@@ -13,12 +11,18 @@ cc_library(
 )
 
 cc_library(
-  name = "emulator",
-  srcs = ["emulator.cc"],
-  hdrs = ["emulator.h"],
+  name = "serial_impl",
+  srcs = ["serial_impl.cc"],
+  hdrs = ["serial_impl.h"],
   visibility = ["//visibility:public"], 
-  deps = [":serial_communication_interface", 
-          ":gpio_interface"],
+  deps = [":serial_communication_interface"],
 )
 
+cc_library(
+  name = "gpio_impl",
+  srcs = ["gpio_impl.cc"],
+  hdrs = ["gpio_impl.h"],
+  visibility = ["//visibility:public"], 
+  deps = [":gpio_interface"],
+)
 

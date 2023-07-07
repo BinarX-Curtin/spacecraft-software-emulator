@@ -1,9 +1,9 @@
-#include "src/emulator.h"
+#include "emulator/public/emulator.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
-#include "src/serial_communication_interface.h"
+#include "abstraction_layer/serial_communication_interface.h"
 
 using namespace ::testing;
 

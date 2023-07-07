@@ -5,7 +5,7 @@
  *
  */
 
-#include "emulator.h"
+#include "emulator/public/emulator.h"
 
 #include <math.h>
 
