@@ -10,13 +10,16 @@
 
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
+#include "abstraction_layer/time_interface.h"
 
 namespace binarx_emulator {
 
-constexpr uint16_t kMaxPayloadDataLength =
-    500; /**> Max payload data size allowed */
-constexpr uint32_t kDefaultCommunicationDelay =
-    200; /**> The time to wait for a communication transaction*/
+/**> Max payload data size allowed */
+constexpr uint16_t kMaxPayloadDataLength = 200;
+/**> The time to wait for a communication transaction*/
+constexpr uint32_t kDefaultCommunicationDelay = 200;
+/**> The time the Payload is allowed to be on for in milliseconds*/
+constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
@@ -31,34 +34,60 @@ class BinarXEmulator {
    * @param uart_communication Pointer to the UART implementation object
    * @param gpio_object Pointer to the GPIO implementation object
    */
-  BinarXEmulator(
-      binarx_serial_interface::SerialCommunicationInterface* spi_communication,
-      binarx_serial_interface::SerialCommunicationInterface* uart_communication,
-      binarx_gpio_interface::GpioInterface* gpio_object)
-      : spi_comunication_(spi_communication),
-        uart_comunication_(uart_communication),
-        gpio_controller_(gpio_object){};
+  BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface*
+                     payload_communication,
+                 binarx_serial_interface::SerialCommunicationInterface*
+                     computer_communication,
+                 binarx_gpio_interface::GpioInterface* gpio_object,
+                 binarx_time_interface::TimeInterface* time_object)
+      : payload_communication_(payload_communication),
+        computer_communication_(computer_communication),
+        gpio_controller_(gpio_object),
+        time_controller_(time_object),
+        button_pressed_(false),
+        waiting_for_payload_(true){};
+
   /**
-   * @brief Function for the SPI sequence
+   * @brief Function that holds what happens when the Emulator is first started
+   */
+  void Init();
+
+  /**
+   * @brief Function to use when payload data is requested by the students
    *
    */
-  void SpiRun();
+  void Run();
+
   /**
-   * @brief A function to toggle the Yellow LED to communicate that the Emulator
-   * is switched on
+   * @brief Function that communicates with the payload
    *
    */
-  void ToggleYellowLed();
-  /**
-   * @brief Function sequence for when the Button is pressed
-   *
-   */
-  void ButtonPressed();
+  void PayloadCommunication();
 
  private:
-  binarx_serial_interface::SerialCommunicationInterface* spi_comunication_;
-  binarx_serial_interface::SerialCommunicationInterface* uart_comunication_;
+  binarx_serial_interface::SerialCommunicationInterface* payload_communication_;
+  binarx_serial_interface::SerialCommunicationInterface*
+      computer_communication_;
   binarx_gpio_interface::GpioInterface* gpio_controller_;
+  binarx_time_interface::TimeInterface* time_controller_;
+
+  /**
+   * @brief Function that provide information to the user when the emulator
+   * starts
+   *
+   */
+  void RunStartInfo();
+
+  /**
+   * @brief Function that provide information to the user when the emulator
+   * stops
+   *
+   */
+  void RunEndInfo();
+
+ protected:
+  bool button_pressed_;
+  bool waiting_for_payload_;
 };
 
 }  // namespace binarx_emulator

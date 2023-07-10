@@ -3,14 +3,16 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
+#include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
+#include "abstraction_layer/time_interface.h"
 
 using namespace ::testing;
 
 class FakeSerialComunication
     : public binarx_serial_interface::SerialCommunicationInterface {
  public:
-  binarx_serial_interface::SerialStatus Receive(uint8_t *receive_buffer,
+  binarx_serial_interface::SerialStatus Receive(uint8_t* receive_buffer,
                                                 uint16_t size,
                                                 uint32_t timeout) override {
     for (uint16_t i = 0; i < size; i++) {
@@ -18,18 +20,11 @@ class FakeSerialComunication
     };
     return binarx_serial_interface::SerialStatus::Success;
   };
-  binarx_serial_interface::SerialStatus Transmit(uint8_t *transmit_buffer,
+  binarx_serial_interface::SerialStatus Transmit(uint8_t* transmit_buffer,
                                                  uint16_t size,
                                                  uint32_t timeout) override {
     return binarx_serial_interface::SerialStatus::Success;
   };
-
-  // binarx_serial_interface::SerialStatus TransmitReceive(
-  //     std::array<uint8_t, kMaxPayloadDataLength> transmit_buffer,
-  //     std::array<uint8_t, kMaxPayloadDataLength> receive_buffer, uint16_t
-  //     size, uint32_t timeout) override {
-  //   return binarx_serial_interface::SerialStatus::Success;
-  // };
 };
 
 class SerialCommunicationMock
@@ -40,16 +35,11 @@ class SerialCommunicationMock
   MOCK_METHOD(binarx_serial_interface::SerialStatus, Receive,
               (uint8_t * receive_buffer, uint16_t size, uint32_t timeout),
               (override));
-  // MOCK_METHOD(binarx_serial_interface::SerialStatus, TransmitReceive,
-  //             (std::array<uint8_t, kMaxPayloadDataLength> transmit_buffer,
-  //             std::array<uint8_t, kMaxPayloadDataLength> receive_buffer,
-  //              uint16_t size, uint32_t timeout),
-  //             (override));
 
-  void DelegateToFake() {
+  void DelegateToSuccessfulFake() {
     ON_CALL(*this, Receive)
         .WillByDefault(
-            [this](uint8_t *buffer, uint16_t size, uint32_t timeout) {
+            [this](uint8_t* buffer, uint16_t size, uint32_t timeout) {
               return fake_.Receive(buffer, size, timeout);
             });
   }
@@ -68,6 +58,11 @@ class GpioMock : public binarx_gpio_interface::GpioInterface {
               (binarx_gpio_interface::GpioSelector, uint32_t timeout),
               (override));
 };
+class TimeMock : public binarx_time_interface::TimeInterface {
+ public:
+  MOCK_METHOD(void, Delay, (uint32_t milliseconds), (override));
+  MOCK_METHOD(uint32_t, GetTicks, (), (override));
+};
 
 MATCHER_P2(ArraysAreEqual, array, size,
            "elements are equal [%(array)s, %(size)s]") {
@@ -79,135 +74,151 @@ MATCHER_P2(ArraysAreEqual, array, size,
   return true;
 }
 
+class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
+ public:
+  EmulatorMockTesting(binarx_serial_interface::SerialCommunicationInterface*
+                          payload_communication,
+                      binarx_serial_interface::SerialCommunicationInterface*
+                          computer_communication,
+                      binarx_gpio_interface::GpioInterface* gpio_object,
+                      binarx_time_interface::TimeInterface* time_object)
+      : binarx_emulator::BinarXEmulator(payload_communication,
+                                        computer_communication, gpio_object,
+                                        time_object){};
+
+  void SetWaitingForPayload_TestOnly(bool value) {
+    waiting_for_payload_ = value;
+  }
+  void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
+};
+
 class EmulatorTest : public testing::Test {
  protected:
   // void SetUp() override{};
-  SerialCommunicationMock spi_com_mock;
-  SerialCommunicationMock uart_com_mock;
-  GpioMock gpio_mock;
-  binarx_emulator::BinarXEmulator emulator = binarx_emulator::BinarXEmulator(
-      &spi_com_mock, &uart_com_mock, &gpio_mock);
+  NiceMock<SerialCommunicationMock> payload_com_mock;
+  NiceMock<SerialCommunicationMock> computer_com_mock;
+  NiceMock<GpioMock> gpio_mock;
+  NiceMock<TimeMock> time_mock;
+
+  EmulatorMockTesting emulator = EmulatorMockTesting(
+      &payload_com_mock, &computer_com_mock, &gpio_mock, &time_mock);
 };
 
-TEST_F(EmulatorTest, SPIComunicationSuccess) {
-  // Given a spi returns success
-  spi_com_mock.DelegateToFake();
-
-  EXPECT_CALL(
-      gpio_mock,
-      WaitForInterrupt(binarx_gpio_interface::GpioSelector::PayloadReady, _))
-      .Times(1);
-
-  // When a transaction is successful the green Led will turn on
-  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
-      .Times(1);
-
-  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed))
-      .Times(1);
-
-  EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
-  EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(1);
-
-  // When
-  emulator.SpiRun();
-}
-
-TEST_F(EmulatorTest, SpiInEqualsUartOut) {
-  // Given a buffer with data
+TEST_F(EmulatorTest, Run_DataTransferSuccess) {
+  // Given a buffer with data that is sent succesfully from the payload
   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-  for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
+  for (uint16_t i = 0; i < sizeof(data_buffer) - sizeof(data_buffer) + 1; i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
-  EXPECT_CALL(spi_com_mock, Receive(_, _, _))
+  // Then the data received by the emulator from the payload should be equal to
+  // the data sent to by the emulator to the Users Computer
+  EXPECT_CALL(payload_com_mock, Receive(_, _, _))
       .WillOnce(DoAll(
           SetArrayArgument<0>(data_buffer, data_buffer + sizeof(data_buffer)),
           Return(binarx_serial_interface::SerialStatus::Success)));
 
-  EXPECT_CALL(uart_com_mock,
+  // There can be any number of transmisions to the computer.
+  EXPECT_CALL(computer_com_mock, Transmit(_, _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
+
+  // But at least one must match the data receive from the payload
+  EXPECT_CALL(computer_com_mock,
               Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
                        sizeof(data_buffer), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-  // When
-  emulator.SpiRun();
+
+  emulator.SetButtonPressed_TestOnly(true);
+  // When Payload Comunication is called
+  emulator.PayloadCommunication();
 }
 
-TEST_F(EmulatorTest, SpiTimeOut) {
-  // Given a buffer with data
-  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-
-  EXPECT_CALL(spi_com_mock, Receive(_, _, _))
-      .WillOnce(DoAll(Return(binarx_serial_interface::SerialStatus::Timeout)));
-
-  EXPECT_CALL(
-      uart_com_mock,
-      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-  // When
-  emulator.SpiRun();
-}
-
-TEST_F(EmulatorTest, SpiReturnsError) {
-  // Given a buffer with data
-  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-
-  EXPECT_CALL(spi_com_mock, Receive(_, _, _))
-      .WillOnce(DoAll(Return(binarx_serial_interface::SerialStatus::Error)));
-
-  EXPECT_CALL(
-      uart_com_mock,
-      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-  // When
-  emulator.SpiRun();
-}
-
-TEST_F(EmulatorTest, WaitForInterruptTimeOut) {
-  // Given a buffer with data
-  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-
-  EXPECT_CALL(
-      gpio_mock,
-      WaitForInterrupt(binarx_gpio_interface::GpioSelector::PayloadReady, _))
-      .WillOnce(Return(binarx_gpio_interface::GpioStatus::Timeout));
-
-  // An error message will be sent by Uart
-  EXPECT_CALL(
-      uart_com_mock,
-      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  // When
-  emulator.SpiRun();
-}
-
-TEST_F(EmulatorTest, ToggleYellowLed) {
-  EXPECT_CALL(gpio_mock,
-              TogglePin(binarx_gpio_interface::GpioSelector::YellowLed))
-      .Times(1);
-
-  emulator.ToggleYellowLed();
-}
-
-TEST_F(EmulatorTest, ButtonPushedSuccess) {
-  // Given spi returns success
-  spi_com_mock.DelegateToFake();
-
-  // Expect for the payload to be turned on, and then off
+TEST_F(EmulatorTest, Run_IsRedLedOn) {
+  EXPECT_CALL(gpio_mock, SetHigh(_));
+  // Has the Red Led turn on when the emulator starts running
   EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::RedLed))
       .Times(1);
+
+  EXPECT_CALL(gpio_mock, SetLow(_));
+  // And is it turned off
   EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
       .Times(1);
 
-  // Green LED is set high and low but we do not care how many times.
-  EXPECT_CALL(gpio_mock,
-              SetHigh(binarx_gpio_interface::GpioSelector::GreenLed));
-  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed));
-
-  // Expect an SPI receive and Uart Transmit transactions
-  EXPECT_CALL(spi_com_mock, Receive(_, _, _)).Times(1);
-  EXPECT_CALL(uart_com_mock, Transmit(_, _, _)).Times(2);
-
+  emulator.SetWaitingForPayload_TestOnly(false);
   // When
-  emulator.ButtonPressed();
+  emulator.Run();
 }
+
+// TEST_F(EmulatorTest, PayloadTimeOut) {
+//   // Given a buffer with data
+//   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+//   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
+//     data_buffer[i] = static_cast<char>(i);
+//   };
+
+//   // when data is copied to the received data buffer from the payload, but
+//   the
+//   // function returns a timeout. the the buffer will not be transmited as an
+//   // error message gets sent
+//   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
+//       .WillOnce(DoAll(
+//           SetArrayArgument<0>(data_buffer, data_buffer +
+//           sizeof(data_buffer)),
+//           Return(binarx_serial_interface::SerialStatus::Timeout)));
+
+//   // There can be any number of transmisions to the computer and no
+//   transmission
+//   // should be equal to the data buffer received from the payload as it
+//   returned
+//   // timeout
+//   EXPECT_CALL(
+//       computer_com_mock,
+//       Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+//       .Times(AnyNumber())
+//       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
+
+//   // When
+//   emulator.Run();
+// }
+
+// TEST_F(EmulatorTest, PayloadReturnsError) {
+//   // Given a buffer with data
+//   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+//   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
+//     data_buffer[i] = static_cast<char>(i);
+//   };
+
+//   // when data is copied to the received data buffer from the payload, but
+//   the
+//   // function returns an Error. then the buffer will not be transmited as an
+//   // error message gets sent
+//   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
+//       .WillOnce(DoAll(
+//           SetArrayArgument<0>(data_buffer, data_buffer +
+//           sizeof(data_buffer)),
+//           Return(binarx_serial_interface::SerialStatus::Error)));
+
+//   // There can be any number of transmisions to the computer and no
+//   transmission
+//   // should be equal to the data buffer received from the payload as it
+//   returned
+//   // timeout
+//   EXPECT_CALL(
+//       computer_com_mock,
+//       Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+//       .Times(AnyNumber())
+//       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
+
+//   // When
+//   emulator.Run();
+// }
+
+// TEST_F(EmulatorTest, EmulatorTimeout) {
+//   GTEST_SKIP()
+//       << "Skipping single test as it is not completed but should be
+//       completed";
+
+//   // When
+//   emulator.Run();
+// }

@@ -1,7 +1,7 @@
 /**
  * @file gpio_interface.h
  * @author Tristan Ward
- * @brief GPIO interface heather file to create selectable
+ * @brief GPIO interface heather file to create the GPIO selectable
  * dependencies
  *
  */

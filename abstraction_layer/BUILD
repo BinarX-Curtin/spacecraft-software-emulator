@@ -9,6 +9,11 @@ cc_library(
   hdrs = ["gpio_interface.h"],
   visibility = ["//visibility:public"],
 )
+cc_library(
+   name = "time_interface",
+  hdrs = ["time_interface.h"],
+  visibility = ["//visibility:public"],
+)
 
 cc_library(
   name = "serial_impl",
