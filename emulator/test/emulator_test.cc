@@ -2,6 +2,7 @@
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include <sys/time.h>
 
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
@@ -135,12 +136,12 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
 }
 
 TEST_F(EmulatorTest, Run_IsRedLedOn) {
-  EXPECT_CALL(gpio_mock, SetHigh(_));
+  EXPECT_CALL(gpio_mock, SetHigh(_)).Times(AnyNumber());
   // Has the Red Led turn on when the emulator starts running
   EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::RedLed))
       .Times(1);
 
-  EXPECT_CALL(gpio_mock, SetLow(_));
+  EXPECT_CALL(gpio_mock, SetLow(_)).Times(AnyNumber());
   // And is it turned off
   EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
       .Times(1);
@@ -150,75 +151,76 @@ TEST_F(EmulatorTest, Run_IsRedLedOn) {
   emulator.Run();
 }
 
-// TEST_F(EmulatorTest, PayloadTimeOut) {
-//   // Given a buffer with data
-//   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-//   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
-//     data_buffer[i] = static_cast<char>(i);
-//   };
+TEST_F(EmulatorTest, PayloadTimeOut) {
+  // Given a buffer with data
+  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+  for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
+    data_buffer[i] = static_cast<char>(i);
+  };
 
-//   // when data is copied to the received data buffer from the payload, but
-//   the
-//   // function returns a timeout. the the buffer will not be transmited as an
-//   // error message gets sent
-//   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
-//       .WillOnce(DoAll(
-//           SetArrayArgument<0>(data_buffer, data_buffer +
-//           sizeof(data_buffer)),
-//           Return(binarx_serial_interface::SerialStatus::Timeout)));
+  // when data is copied to the received data buffer from the payload, but
+  // the function returns a timeout. the buffer will not be transmited as an
+  // error message gets sent
+  EXPECT_CALL(payload_com_mock, Receive(_, _, _))
+      .WillOnce(DoAll(
+          SetArrayArgument<0>(data_buffer, data_buffer + sizeof(data_buffer)),
+          Return(binarx_serial_interface::SerialStatus::Timeout)));
 
-//   // There can be any number of transmisions to the computer and no
-//   transmission
-//   // should be equal to the data buffer received from the payload as it
-//   returned
-//   // timeout
-//   EXPECT_CALL(
-//       computer_com_mock,
-//       Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
-//       .Times(AnyNumber())
-//       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
+  // There can be any number of transmisions to the computer and no
+  // transmission should be equal to the data buffer received from the payload
+  // as it returned timeout
+  EXPECT_CALL(
+      computer_com_mock,
+      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
-//   // When
-//   emulator.Run();
-// }
+  emulator.SetButtonPressed_TestOnly(true);
+  // When
+  emulator.PayloadCommunication();
+}
 
-// TEST_F(EmulatorTest, PayloadReturnsError) {
-//   // Given a buffer with data
-//   uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
-//   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
-//     data_buffer[i] = static_cast<char>(i);
-//   };
+TEST_F(EmulatorTest, PayloadReturnsError) {
+  // Given a buffer with data
+  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+  for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
+    data_buffer[i] = static_cast<char>(i);
+  };
 
-//   // when data is copied to the received data buffer from the payload, but
-//   the
-//   // function returns an Error. then the buffer will not be transmited as an
-//   // error message gets sent
-//   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
-//       .WillOnce(DoAll(
-//           SetArrayArgument<0>(data_buffer, data_buffer +
-//           sizeof(data_buffer)),
-//           Return(binarx_serial_interface::SerialStatus::Error)));
+  // when data is copied to the received data buffer from the payload, but
+  // the function returns an Error. then the buffer will not be transmited as an
+  // error message gets sent
+  EXPECT_CALL(payload_com_mock, Receive(_, _, _))
+      .WillOnce(DoAll(
+          SetArrayArgument<0>(data_buffer, data_buffer + sizeof(data_buffer)),
+          Return(binarx_serial_interface::SerialStatus::Error)));
 
-//   // There can be any number of transmisions to the computer and no
-//   transmission
-//   // should be equal to the data buffer received from the payload as it
-//   returned
-//   // timeout
-//   EXPECT_CALL(
-//       computer_com_mock,
-//       Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
-//       .Times(AnyNumber())
-//       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
+  // There can be any number of transmisions to the computer and no transmission
+  // should be equal to the data buffer received from the payload as it returned
+  // timeout
+  EXPECT_CALL(
+      computer_com_mock,
+      Transmit(Not(ArraysAreEqual(data_buffer, sizeof(data_buffer))), _, _))
+      .Times(AnyNumber())
+      .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
-//   // When
-//   emulator.Run();
-// }
+  emulator.SetButtonPressed_TestOnly(true);
+  // When
+  emulator.PayloadCommunication();
+}
 
-// TEST_F(EmulatorTest, EmulatorTimeout) {
-//   GTEST_SKIP()
-//       << "Skipping single test as it is not completed but should be
-//       completed";
+TEST_F(EmulatorTest, EmulatorTimeout) {
+  // GTEST_SKIP()
+  //     << "Skipping single test as it is not completed but should be completed
+  //     ";
+  uint32_t now = 0;
+  uint32_t emulator_timeout = binarx_emulator::kWaitForPayloadMaxTime + 1;
 
-//   // When
-//   emulator.Run();
-// }
+  EXPECT_CALL(time_mock, GetTicks())
+      .Times(2)
+      .WillOnce(Return(now))
+      .WillOnce(Return(emulator_timeout));
+
+  // When
+  emulator.Run();
+}

@@ -30,4 +30,11 @@ cc_library(
   visibility = ["//visibility:public"], 
   deps = [":gpio_interface"],
 )
+cc_library(
+  name = "time_impl",
+  srcs = ["time_impl.cc"],
+  hdrs = ["time_impl.h"],
+  visibility = ["//visibility:public"], 
+  deps = [":time_interface"],
+)
 
