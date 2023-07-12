@@ -1,0 +1,7 @@
+emulator.cc:14:6:void binarx_emulator::BinarXEmulator::Run()	5
+emulator.cc:35:6:void binarx_emulator::BinarXEmulator::PayloadCommunicationHandler()	3
+emulator.cc:71:6:void binarx_emulator::BinarXEmulator::Init()	1
+emulator.cc:76:6:void binarx_emulator::BinarXEmulator::PayloadCommunicationCallback()	1
+emulator.cc:79:6:void binarx_emulator::BinarXEmulator::ButtonPressCallback()	1
+emulator.cc:81:6:void binarx_emulator::BinarXEmulator::RunStartInfo()	1
+emulator.cc:91:6:void binarx_emulator::BinarXEmulator::RunEndInfo()	1

@@ -1,0 +1,18 @@
+gpio_interface.h:29:7:constexpr binarx_gpio_interface::GpioInterface::GpioInterface()	1
+gpio_impl.h:16:3:binarx_gpio_impl::GpioImpl::GpioImpl()	1
+time_interface.h:12:7:constexpr binarx_time_interface::TimeInterface::TimeInterface()	1
+time_impl.h:16:4:binarx_time_impl::TimeImpl::TimeImpl()	1
+serial_communication_interface.h:32:7:constexpr binarx_serial_interface::SerialCommunicationInterface::SerialCommunicationInterface()	1
+serial_impl.h:19:3:binarx_serial_impl::SpiImpl::SpiImpl()	1
+serial_impl.h:29:3:binarx_serial_impl::UartImpl::UartImpl()	1
+emulator.h:44:3:binarx_emulator::BinarXEmulator::BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface*, binarx_serial_interface::SerialCommunicationInterface*, binarx_gpio_interface::GpioInterface*, binarx_time_interface::TimeInterface*)	1
+main.cpp:85:17:void HAL_GPIO_EXTI_Callback(uint16_t)	3
+main.cpp:103:5:int main()	1
+main.cpp:179:6:void SystemClock_Config()	4
+main.cpp:240:13:void MX_SPI1_Init()	2
+main.cpp:288:13:void MX_USART3_UART_Init()	5
+main.cpp:336:13:void MX_USB_OTG_FS_PCD_Init()	2
+main.cpp:372:13:void MX_GPIO_Init()	1
+main.cpp:437:6:void Error_Handler()	1
+main.cpp:446:1:void __static_initialization_and_destruction_0(int, int)	3
+main.cpp:446:1:cpp)	1

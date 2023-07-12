@@ -1,0 +1,6 @@
+../Core/Src/gpio_impl.cc:15:6:virtual void binarx_gpio_impl::GpioImpl::SetHigh(binarx_gpio_interface::GpioSelector)	24	static
+../Core/Src/gpio_impl.cc:18:6:virtual void binarx_gpio_impl::GpioImpl::SetLow(binarx_gpio_interface::GpioSelector)	24	static
+../Core/Src/gpio_impl.cc:21:6:virtual void binarx_gpio_impl::GpioImpl::TogglePin(binarx_gpio_interface::GpioSelector)	24	static
+../Core/Src/gpio_impl.cc:24:35:virtual binarx_gpio_interface::GpioStatus binarx_gpio_impl::GpioImpl::WaitForInterrupt(binarx_gpio_interface::GpioSelector, uint32_t)	40	static
+../Core/Src/gpio_impl.cc:35:10:uint16_t binarx_gpio_impl::GpioImpl::GetPin(binarx_gpio_interface::GpioSelector)	16	static
+../Core/Src/gpio_impl.cc:45:15:GPIO_TypeDef* binarx_gpio_impl::GpioImpl::GetPort(binarx_gpio_interface::GpioSelector)	16	static

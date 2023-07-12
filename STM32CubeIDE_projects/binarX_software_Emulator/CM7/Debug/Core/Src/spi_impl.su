@@ -1,0 +1,3 @@
+../Core/Src/spi_impl.cc:14:39:virtual binarx_serial_interface::SerialStatus binarx_spi_impl::SpiImpl::Transmit(uint8_t*, uint16_t, uint32_t)	32	static
+../Core/Src/spi_impl.cc:21:39:virtual binarx_serial_interface::SerialStatus binarx_spi_impl::SpiImpl::Receive(uint8_t*, uint16_t, uint32_t)	32	static
+../Core/Src/spi_impl.cc:29:40:binarx_serial_interface::SerialStatus binarx_spi_impl::SpiImpl::SpiErrorHandler(HAL_StatusTypeDef)	16	static
