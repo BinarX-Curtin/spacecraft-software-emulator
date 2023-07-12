@@ -38,11 +38,14 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     return;
   }
 
+  // Turn on the LED to demostrate SPI success
+  gpio_controller_->SetHigh(binarx_gpio_interface::GpioSelector::GreenLed);
+
   char error_msg[] =
       "ERROR: Sorry the message was not received correctly by the Binar "
       "Emulator \n ";
 
-  // // Trigger the Spi Receive message
+  // Trigger the Spi Receive message
   uint8_t receive_buffer[kMaxPayloadDataLength];
   binarx_serial_interface::SerialStatus serial_status =
       payload_communication_->Receive(receive_buffer, kMaxPayloadDataLength,
@@ -50,8 +53,6 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   // Check the status of the SPI transaction
   if (serial_status == binarx_serial_interface::SerialStatus::Success) {
-    // Turn on the LED to demostrate SPI success
-    gpio_controller_->SetHigh(binarx_gpio_interface::GpioSelector::GreenLed);
     // Send the data over UART if SPI data was received succesfully
     computer_communication_->Transmit(receive_buffer, sizeof(receive_buffer),
                                       kDefaultCommunicationDelay);
