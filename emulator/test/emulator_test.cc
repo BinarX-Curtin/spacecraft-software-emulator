@@ -87,8 +87,8 @@ class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
                                         computer_communication, gpio_object,
                                         time_object){};
 
-  void SetWaitingForPayload_TestOnly(bool value) {
-    waiting_for_payload_ = value;
+  void SetPayloadStatus_TestOnly(binarx_emulator::PayloadDataStatus value) {
+    payload_status_ = value;
   }
   void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
 };
@@ -131,8 +131,10 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   emulator.SetButtonPressed_TestOnly(true);
+  emulator.SetPayloadStatus_TestOnly(
+      binarx_emulator::PayloadDataStatus::kPayloadReady);
   // When Payload Comunication is called
-  emulator.PayloadCommunication();
+  emulator.Run();
 }
 
 TEST_F(EmulatorTest, Run_IsRedLedOn) {
@@ -146,7 +148,9 @@ TEST_F(EmulatorTest, Run_IsRedLedOn) {
   EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
       .Times(1);
 
-  emulator.SetWaitingForPayload_TestOnly(false);
+  emulator.SetButtonPressed_TestOnly(true);
+  emulator.SetPayloadStatus_TestOnly(
+      binarx_emulator::PayloadDataStatus::kTrasferCompleted);
   // When
   emulator.Run();
 }
@@ -176,8 +180,10 @@ TEST_F(EmulatorTest, PayloadTimeOut) {
       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
   emulator.SetButtonPressed_TestOnly(true);
+  emulator.SetPayloadStatus_TestOnly(
+      binarx_emulator::PayloadDataStatus::kPayloadReady);
   // When
-  emulator.PayloadCommunication();
+  emulator.Run();
 }
 
 TEST_F(EmulatorTest, PayloadReturnsError) {
@@ -188,8 +194,8 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
   };
 
   // when data is copied to the received data buffer from the payload, but
-  // the function returns an Error. then the buffer will not be transmited as an
-  // error message gets sent
+  // the function returns an Error. then the buffer will not be transmited as
+  // an error message gets sent
   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
       .WillOnce(DoAll(
           SetArrayArgument<0>(data_buffer, data_buffer + sizeof(data_buffer)),
@@ -205,22 +211,28 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
   emulator.SetButtonPressed_TestOnly(true);
+  emulator.SetPayloadStatus_TestOnly(
+      binarx_emulator::PayloadDataStatus::kPayloadReady);
   // When
-  emulator.PayloadCommunication();
+  emulator.Run();
 }
 
 TEST_F(EmulatorTest, EmulatorTimeout) {
   // GTEST_SKIP()
-  //     << "Skipping single test as it is not completed but should be completed
-  //     ";
+  //     << "Skipping single test as it is not completed but should be
+  // completed ";
   uint32_t now = 0;
+  uint32_t emulator_before_timeout =
+      binarx_emulator::kWaitForPayloadMaxTime - 1;
   uint32_t emulator_timeout = binarx_emulator::kWaitForPayloadMaxTime + 1;
 
   EXPECT_CALL(time_mock, GetTicks())
-      .Times(2)
+      .Times(3)
       .WillOnce(Return(now))
+      .WillOnce(Return(emulator_before_timeout))
       .WillOnce(Return(emulator_timeout));
 
+  emulator.SetButtonPressed_TestOnly(true);
   // When
   emulator.Run();
 }

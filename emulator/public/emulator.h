@@ -21,6 +21,12 @@ constexpr uint32_t kDefaultCommunicationDelay = 200;
 /**> The time the Payload is allowed to be on for in milliseconds*/
 constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 
+enum class PayloadDataStatus {
+  kWaitingForPayload,
+  kPayloadReady,
+  kTrasferCompleted,
+};
+
 /**
  * @brief Binar X Emulator to implement the Emulator functions
  *
@@ -45,7 +51,7 @@ class BinarXEmulator {
         gpio_controller_(gpio_object),
         time_controller_(time_object),
         button_pressed_(false),
-        waiting_for_payload_(true){};
+        payload_status_(PayloadDataStatus::kWaitingForPayload){};
 
   /**
    * @brief Function that holds what happens when the Emulator is first started
@@ -58,11 +64,8 @@ class BinarXEmulator {
    */
   void Run();
 
-  /**
-   * @brief Function that communicates with the payload
-   *
-   */
-  void PayloadCommunication();
+  void PayloadCommunicationCallback();
+  void ButtonPressCallback();
 
  private:
   binarx_serial_interface::SerialCommunicationInterface* payload_communication_;
@@ -85,9 +88,17 @@ class BinarXEmulator {
    */
   void RunEndInfo();
 
+  /**
+   * @brief Function that communicates with the payload
+   *
+   */
+  void PayloadCommunicationHandler();
+
+  void ButtonPressHandler();
+
  protected:
   bool button_pressed_;
-  bool waiting_for_payload_;
+  PayloadDataStatus payload_status_;
 };
 
 }  // namespace binarx_emulator

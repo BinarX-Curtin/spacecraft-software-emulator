@@ -12,42 +12,31 @@
 namespace binarx_emulator {
 
 void BinarXEmulator::Run() {
+  if (!button_pressed_) {
+    return;
+  }
   BinarXEmulator::RunStartInfo();
 
-  button_pressed_ = true;
-
   // Need to start a timer
-  uint32_t emulator_timer =
+  uint32_t emulator_timeout =
       time_controller_->GetTicks() + kWaitForPayloadMaxTime;
 
-  while (emulator_timer > time_controller_->GetTicks() &&
-         waiting_for_payload_) {
-    // do nothing
+  while (emulator_timeout > time_controller_->GetTicks() &&
+         payload_status_ != PayloadDataStatus::kTrasferCompleted) {
+    PayloadCommunicationHandler();
   }
 
-  // Reset states
-  waiting_for_payload_ = true;
   button_pressed_ = false;
+  payload_status_ = PayloadDataStatus::kWaitingForPayload;
 
-  // This needs to be called even if the timer has stopped. Watchdog with a
-  // callback to RunEndInfo?
   BinarXEmulator::RunEndInfo();
 }
 
-void BinarXEmulator::Init() {
-  // turn on Yellow LED
-  gpio_controller_->SetHigh(binarx_gpio_interface::GpioSelector::YellowLed);
-}
-
-void BinarXEmulator::PayloadCommunication() {
-  if (!button_pressed_) {
-    // payload communication should only be active when the button has been
-    // pressed
+void BinarXEmulator::PayloadCommunicationHandler() {
+  // Only run once the payload is ready
+  if (payload_status_ != PayloadDataStatus::kPayloadReady) {
     return;
   }
-
-  // Reset the button pressed to false
-  button_pressed_ = false;
 
   char error_msg[] =
       "ERROR: Sorry the message was not received correctly by the Binar "
@@ -71,14 +60,22 @@ void BinarXEmulator::PayloadCommunication() {
     computer_communication_->Transmit((uint8_t *)error_msg, strlen(error_msg),
                                       kDefaultCommunicationDelay);
   }
-
-  // // Make sure the Green LED is off
-  gpio_controller_->SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
-
   // // Let the main runner know that the payload has sent the information
-  waiting_for_payload_ = false;
-  // return;
+  payload_status_ = PayloadDataStatus::kTrasferCompleted;
+
+  // Make sure the Green LED is off
+  gpio_controller_->SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
 }
+
+void BinarXEmulator::Init() {
+  // turn on Yellow LED
+  gpio_controller_->SetHigh(binarx_gpio_interface::GpioSelector::YellowLed);
+}
+
+void BinarXEmulator::PayloadCommunicationCallback() {
+  payload_status_ = PayloadDataStatus::kPayloadReady;
+}
+void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
 
 void BinarXEmulator::RunStartInfo() {
   // turn on red LED
