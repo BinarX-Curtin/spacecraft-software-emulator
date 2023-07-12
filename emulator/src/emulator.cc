@@ -18,7 +18,7 @@ void BinarXEmulator::Run() {
 
   // Need to start a timer
   uint32_t emulator_timer =
-      time_controller_->GetTicks() + kDefaultCommunicationDelay;
+      time_controller_->GetTicks() + kWaitForPayloadMaxTime;
 
   while (emulator_timer > time_controller_->GetTicks() &&
          waiting_for_payload_) {

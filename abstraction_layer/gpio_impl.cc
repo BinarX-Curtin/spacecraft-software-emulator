@@ -34,30 +34,22 @@ binarx_gpio_interface::GpioStatus GpioImpl::WaitForInterrupt(
 
 uint16_t GpioImpl::GetPin(binarx_gpio_interface::GpioSelector gpio) {
   switch (gpio) {
-    case binarx_gpio_interface::GpioSelector::Button:
-      return B1_Pin;
     case binarx_gpio_interface::GpioSelector::YellowLed:
       return LD2_Pin;
     case binarx_gpio_interface::GpioSelector::GreenLed:
       return LD1_Pin;
     case binarx_gpio_interface::GpioSelector::RedLed:
       return LD3_Pin;
-    case binarx_gpio_interface::GpioSelector::PayloadReady:
-      return PL_Pin;
   }
 };
 GPIO_TypeDef* GpioImpl::GetPort(binarx_gpio_interface::GpioSelector gpio) {
   switch (gpio) {
-    case binarx_gpio_interface::GpioSelector::Button:
-      return B1_GPIO_Port;
     case binarx_gpio_interface::GpioSelector::YellowLed:
       return LD2_GPIO_Port;
     case binarx_gpio_interface::GpioSelector::GreenLed:
       return LD1_GPIO_Port;
     case binarx_gpio_interface::GpioSelector::RedLed:
       return LD3_GPIO_Port;
-    case binarx_gpio_interface::GpioSelector::PayloadReady:
-      return PL_GPIO_Port;
   }
 };
 
