@@ -45,6 +45,8 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+#define kDataSize 200
+uint8_t buffer[kDataSize];
 
 /* USER CODE END PV */
 
@@ -59,6 +61,7 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
 
 /* USER CODE END 0 */
 
@@ -95,20 +98,15 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
 
-  uint16_t data_size = 200;
-  uint8_t buffer[data_size];
-  uint8_t random_msg[] = "This is the random payload data";
+
+  uint8_t random_msg[] = "This is the random payload data \n";
 
   for(uint16_t i=0; i<sizeof(random_msg); i++){
 	  buffer[i] = random_msg[i];
   }
 
-  HAL_Delay(30);
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
-  HAL_StatusTypeDef status = HAL_SPI_Transmit(&hspi1, buffer, data_size, HAL_MAX_DELAY);
 
-
-
+  HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
 
 
   /* USER CODE END 2 */
@@ -117,6 +115,10 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if(HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin)==GPIO_PIN_SET){
+		  HAL_GPIO_TogglePin(PL_GPIO_Port, PL_Pin);
+		  HAL_Delay(10);
+	  }
 
     /* USER CODE END WHILE */
 
@@ -249,6 +251,7 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
@@ -259,6 +262,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PL_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PL_Wait_Pin */
+  GPIO_InitStruct.Pin = PL_Wait_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(PL_Wait_GPIO_Port, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */

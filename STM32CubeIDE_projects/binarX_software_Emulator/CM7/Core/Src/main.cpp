@@ -73,7 +73,6 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
   binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
   binarx_serial_impl::UartImpl uart_controller = binarx_serial_impl::UartImpl();
@@ -82,18 +81,19 @@ binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
 
 
 
-extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  switch (GPIO_Pin) {
-    case B1_Pin:
-      emulator.ButtonPressCallback();
-      break;
-    case Payload_Pin:
-      emulator.PayloadCommunicationCallback();
-      break;
-    default:
-      break;
+  extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+    switch (GPIO_Pin) {
+      case B1_Pin:
+        emulator.ButtonPressCallback();
+        break;
+      case Payload_Pin:
+        emulator.PayloadCommunicationCallback();
+        break;
+      default:
+        break;
+    }
   }
-}
+
 /* USER CODE END 0 */
 
 /**
@@ -106,7 +106,7 @@ int main(void)
 
   /* USER CODE END 1 */
 /* USER CODE BEGIN Boot_Mode_Sequence_0 */
-//  int32_t timeout;
+  int32_t timeout;
 /* USER CODE END Boot_Mode_Sequence_0 */
 
 /* USER CODE BEGIN Boot_Mode_Sequence_1 */
@@ -117,7 +117,7 @@ int main(void)
 //  {
 //  Error_Handler();
 //  }
-/* USER CODE END Boot_Mode_Sequence_1 */
+///* USER CODE END Boot_Mode_Sequence_1 */
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
@@ -158,15 +158,15 @@ HAL_HSEM_Release(HSEM_ID_0,0);
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   emulator.Init();
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 	  emulator.Run();
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -255,7 +255,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -416,10 +416,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
-  HAL_NVIC_SetPriority(EXTI4_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI4_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI4_IRQn);
 
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
@@ -444,7 +444,6 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
 
 #ifdef  USE_FULL_ASSERT
 /**

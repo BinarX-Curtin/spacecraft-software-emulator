@@ -6,7 +6,7 @@
 ../Core/Inc/serial_impl.h:19:3:binarx_serial_impl::SpiImpl::SpiImpl()	16	static
 ../Core/Inc/serial_impl.h:29:3:binarx_serial_impl::UartImpl::UartImpl()	16	static
 ../Core/Inc/emulator.h:44:3:binarx_emulator::BinarXEmulator::BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface*, binarx_serial_interface::SerialCommunicationInterface*, binarx_gpio_interface::GpioInterface*, binarx_time_interface::TimeInterface*)	24	static
-../Core/Src/main.cpp:85:17:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
+../Core/Src/main.cpp:84:19:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
 ../Core/Src/main.cpp:103:5:int main()	16	static
 ../Core/Src/main.cpp:179:6:void SystemClock_Config()	120	static
 ../Core/Src/main.cpp:240:13:void MX_SPI1_Init()	8	static

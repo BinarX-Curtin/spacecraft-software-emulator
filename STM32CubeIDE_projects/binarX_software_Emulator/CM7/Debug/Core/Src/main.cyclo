@@ -6,7 +6,7 @@ serial_communication_interface.h:32:7:constexpr binarx_serial_interface::SerialC
 serial_impl.h:19:3:binarx_serial_impl::SpiImpl::SpiImpl()	1
 serial_impl.h:29:3:binarx_serial_impl::UartImpl::UartImpl()	1
 emulator.h:44:3:binarx_emulator::BinarXEmulator::BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface*, binarx_serial_interface::SerialCommunicationInterface*, binarx_gpio_interface::GpioInterface*, binarx_time_interface::TimeInterface*)	1
-main.cpp:85:17:void HAL_GPIO_EXTI_Callback(uint16_t)	3
+main.cpp:84:19:void HAL_GPIO_EXTI_Callback(uint16_t)	3
 main.cpp:103:5:int main()	1
 main.cpp:179:6:void SystemClock_Config()	4
 main.cpp:240:13:void MX_SPI1_Init()	2

@@ -18,7 +18,9 @@ C_SRCS += \
 ../Core/Src/sysmem.c 
 
 CPP_SRCS += \
-../Core/Src/main.cpp 
+../Core/Src/main.cpp \
+../Core/Src/mainCry.cpp \
+../Core/Src/mainSomething.cpp 
 
 C_DEPS += \
 ./Core/Src/stm32h7xx_hal_msp.d \
@@ -38,6 +40,8 @@ OBJS += \
 ./Core/Src/gpio_impl.o \
 ./Core/Src/interrupt_callback.o \
 ./Core/Src/main.o \
+./Core/Src/mainCry.o \
+./Core/Src/mainSomething.o \
 ./Core/Src/serial_impl.o \
 ./Core/Src/stm32h7xx_hal_msp.o \
 ./Core/Src/stm32h7xx_it.o \
@@ -46,7 +50,9 @@ OBJS += \
 ./Core/Src/time_impl.o 
 
 CPP_DEPS += \
-./Core/Src/main.d 
+./Core/Src/main.d \
+./Core/Src/mainCry.d \
+./Core/Src/mainSomething.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
@@ -60,7 +66,7 @@ Core/Src/%.o Core/Src/%.su Core/Src/%.cyclo: ../Core/Src/%.c Core/Src/subdir.mk
 clean: clean-Core-2f-Src
 
 clean-Core-2f-Src:
-	-$(RM) ./Core/Src/emulator.cyclo ./Core/Src/emulator.d ./Core/Src/emulator.o ./Core/Src/emulator.su ./Core/Src/gpio_impl.cyclo ./Core/Src/gpio_impl.d ./Core/Src/gpio_impl.o ./Core/Src/gpio_impl.su ./Core/Src/interrupt_callback.cyclo ./Core/Src/interrupt_callback.d ./Core/Src/interrupt_callback.o ./Core/Src/interrupt_callback.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/serial_impl.cyclo ./Core/Src/serial_impl.d ./Core/Src/serial_impl.o ./Core/Src/serial_impl.su ./Core/Src/stm32h7xx_hal_msp.cyclo ./Core/Src/stm32h7xx_hal_msp.d ./Core/Src/stm32h7xx_hal_msp.o ./Core/Src/stm32h7xx_hal_msp.su ./Core/Src/stm32h7xx_it.cyclo ./Core/Src/stm32h7xx_it.d ./Core/Src/stm32h7xx_it.o ./Core/Src/stm32h7xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/time_impl.cyclo ./Core/Src/time_impl.d ./Core/Src/time_impl.o ./Core/Src/time_impl.su
+	-$(RM) ./Core/Src/emulator.cyclo ./Core/Src/emulator.d ./Core/Src/emulator.o ./Core/Src/emulator.su ./Core/Src/gpio_impl.cyclo ./Core/Src/gpio_impl.d ./Core/Src/gpio_impl.o ./Core/Src/gpio_impl.su ./Core/Src/interrupt_callback.cyclo ./Core/Src/interrupt_callback.d ./Core/Src/interrupt_callback.o ./Core/Src/interrupt_callback.su ./Core/Src/main.cyclo ./Core/Src/main.d ./Core/Src/main.o ./Core/Src/main.su ./Core/Src/mainCry.cyclo ./Core/Src/mainCry.d ./Core/Src/mainCry.o ./Core/Src/mainCry.su ./Core/Src/mainSomething.cyclo ./Core/Src/mainSomething.d ./Core/Src/mainSomething.o ./Core/Src/mainSomething.su ./Core/Src/serial_impl.cyclo ./Core/Src/serial_impl.d ./Core/Src/serial_impl.o ./Core/Src/serial_impl.su ./Core/Src/stm32h7xx_hal_msp.cyclo ./Core/Src/stm32h7xx_hal_msp.d ./Core/Src/stm32h7xx_hal_msp.o ./Core/Src/stm32h7xx_hal_msp.su ./Core/Src/stm32h7xx_it.cyclo ./Core/Src/stm32h7xx_it.d ./Core/Src/stm32h7xx_it.o ./Core/Src/stm32h7xx_it.su ./Core/Src/syscalls.cyclo ./Core/Src/syscalls.d ./Core/Src/syscalls.o ./Core/Src/syscalls.su ./Core/Src/sysmem.cyclo ./Core/Src/sysmem.d ./Core/Src/sysmem.o ./Core/Src/sysmem.su ./Core/Src/time_impl.cyclo ./Core/Src/time_impl.d ./Core/Src/time_impl.o ./Core/Src/time_impl.su
 
 .PHONY: clean-Core-2f-Src
 

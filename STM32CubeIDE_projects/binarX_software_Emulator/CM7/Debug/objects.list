@@ -3,6 +3,8 @@
 "./Core/Src/gpio_impl.o"
 "./Core/Src/interrupt_callback.o"
 "./Core/Src/main.o"
+"./Core/Src/mainCry.o"
+"./Core/Src/mainSomething.o"
 "./Core/Src/serial_impl.o"
 "./Core/Src/stm32h7xx_hal_msp.o"
 "./Core/Src/stm32h7xx_it.o"
