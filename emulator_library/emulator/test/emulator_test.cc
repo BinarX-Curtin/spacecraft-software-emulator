@@ -77,20 +77,22 @@ MATCHER_P2(ArraysAreEqual, array, size,
 
 class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
  public:
-  EmulatorMockTesting(binarx_serial_interface::SerialCommunicationInterface*
+  EmulatorMockTesting(binarx_serial_interface::SerialCommunicationInterface&
                           payload_communication,
-                      binarx_serial_interface::SerialCommunicationInterface*
+                      binarx_serial_interface::SerialCommunicationInterface&
                           computer_communication,
-                      binarx_gpio_interface::GpioInterface* gpio_object,
-                      binarx_time_interface::TimeInterface* time_object)
+                      binarx_gpio_interface::GpioInterface& gpio_object,
+                      binarx_time_interface::TimeInterface& time_object)
       : binarx_emulator::BinarXEmulator(payload_communication,
                                         computer_communication, gpio_object,
                                         time_object){};
 
-  void SetPayloadStatus_TestOnly(binarx_emulator::PayloadDataStatus value) {
+  void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
   }
   void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
+
+  using binarx_emulator::BinarXEmulator::PayloadDataStatus;
 };
 
 class EmulatorTest : public testing::Test {
@@ -102,7 +104,7 @@ class EmulatorTest : public testing::Test {
   NiceMock<TimeMock> time_mock;
 
   EmulatorMockTesting emulator = EmulatorMockTesting(
-      &payload_com_mock, &computer_com_mock, &gpio_mock, &time_mock);
+      payload_com_mock, computer_com_mock, gpio_mock, time_mock);
 };
 
 TEST_F(EmulatorTest, Run_DataTransferSuccess) {
@@ -132,7 +134,7 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
 
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
-      binarx_emulator::PayloadDataStatus::kPayloadReady);
+      EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
   // When Payload Comunication is called
   emulator.Run();
 }
@@ -150,7 +152,7 @@ TEST_F(EmulatorTest, Run_IsRedLedOn) {
 
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
-      binarx_emulator::PayloadDataStatus::kTrasferCompleted);
+      EmulatorMockTesting::PayloadDataStatus::kTrasferCompleted);
   // When
   emulator.Run();
 }
@@ -181,7 +183,7 @@ TEST_F(EmulatorTest, PayloadTimeOut) {
 
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
-      binarx_emulator::PayloadDataStatus::kPayloadReady);
+      EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
   // When
   emulator.Run();
 }
@@ -212,7 +214,7 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
 
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
-      binarx_emulator::PayloadDataStatus::kPayloadReady);
+      EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
   // When
   emulator.Run();
 }
