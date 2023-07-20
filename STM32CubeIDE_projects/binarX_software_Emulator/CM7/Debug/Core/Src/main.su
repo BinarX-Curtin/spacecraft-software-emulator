@@ -1,18 +1,18 @@
+../Core/Inc/emulator.h:37:3:binarx_emulator::BinarXEmulator::BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface&, binarx_serial_interface::SerialCommunicationInterface&, binarx_gpio_interface::GpioInterface&, binarx_time_interface::TimeInterface&)	24	static
 ../Core/Inc/gpio_interface.h:29:7:constexpr binarx_gpio_interface::GpioInterface::GpioInterface()	16	static
 ../Core/Inc/gpio_impl.h:16:3:binarx_gpio_impl::GpioImpl::GpioImpl()	16	static
-../Core/Inc/time_interface.h:12:7:constexpr binarx_time_interface::TimeInterface::TimeInterface()	16	static
-../Core/Inc/time_impl.h:16:4:binarx_time_impl::TimeImpl::TimeImpl()	16	static
 ../Core/Inc/serial_communication_interface.h:32:7:constexpr binarx_serial_interface::SerialCommunicationInterface::SerialCommunicationInterface()	16	static
 ../Core/Inc/serial_impl.h:19:3:binarx_serial_impl::SpiImpl::SpiImpl()	16	static
 ../Core/Inc/serial_impl.h:29:3:binarx_serial_impl::UartImpl::UartImpl()	16	static
-../Core/Inc/emulator.h:44:3:binarx_emulator::BinarXEmulator::BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface*, binarx_serial_interface::SerialCommunicationInterface*, binarx_gpio_interface::GpioInterface*, binarx_time_interface::TimeInterface*)	24	static
-../Core/Src/main.cpp:84:19:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
-../Core/Src/main.cpp:103:5:int main()	16	static
-../Core/Src/main.cpp:179:6:void SystemClock_Config()	120	static
-../Core/Src/main.cpp:240:13:void MX_SPI1_Init()	8	static
-../Core/Src/main.cpp:288:13:void MX_USART3_UART_Init()	8	static
-../Core/Src/main.cpp:336:13:void MX_USB_OTG_FS_PCD_Init()	8	static
-../Core/Src/main.cpp:372:13:void MX_GPIO_Init()	56	static
-../Core/Src/main.cpp:437:6:void Error_Handler()	4	static,ignoring_inline_asm
-../Core/Src/main.cpp:446:1:void __static_initialization_and_destruction_0(int, int)	24	static
-../Core/Src/main.cpp:446:1:cpp)	8	static
+../Core/Inc/time_interface.h:12:7:constexpr binarx_time_interface::TimeInterface::TimeInterface()	16	static
+../Core/Inc/time_impl.h:16:4:binarx_time_impl::TimeImpl::TimeImpl()	16	static
+../Core/Src/main.cpp:82:17:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
+../Core/Src/main.cpp:101:5:int main()	16	static
+../Core/Src/main.cpp:176:6:void SystemClock_Config()	120	static
+../Core/Src/main.cpp:236:13:void MX_SPI1_Init()	8	static
+../Core/Src/main.cpp:282:13:void MX_USART3_UART_Init()	8	static
+../Core/Src/main.cpp:325:13:void MX_USB_OTG_FS_PCD_Init()	8	static
+../Core/Src/main.cpp:357:13:void MX_GPIO_Init()	56	static
+../Core/Src/main.cpp:421:6:void Error_Handler()	4	static,ignoring_inline_asm
+../Core/Src/main.cpp:428:1:void __static_initialization_and_destruction_0(int, int)	24	static
+../Core/Src/main.cpp:428:1:cpp)	8	static

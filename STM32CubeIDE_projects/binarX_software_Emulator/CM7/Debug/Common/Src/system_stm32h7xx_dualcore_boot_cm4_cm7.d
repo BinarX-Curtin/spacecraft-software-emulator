@@ -1,5 +1,5 @@
 Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.o: \
- /home/tristan/STM32CubeIDE/workspace_1.12.1/binarX_software_Emulator/Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c \
+ /home/tristan/Documents/BinarX/bx_emulator/STM32CubeIDE_projects/binarX_software_Emulator/Common/Src/system_stm32h7xx_dualcore_boot_cm4_cm7.c \
  ../../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h7xx.h \
  ../../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h755xx.h \
  ../../Drivers/CMSIS/Include/core_cm7.h \

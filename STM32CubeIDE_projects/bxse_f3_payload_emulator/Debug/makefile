@@ -75,8 +75,8 @@ all: main-build
 main-build: bxse_f3_payload_emulator.elf secondary-outputs
 
 # Tool invocations
-bxse_f3_payload_emulator.elf bxse_f3_payload_emulator.map: $(OBJS) $(USER_OBJS) /home/tristan/STM32CubeIDE/workspace_1.12.1/bxse_f3_payload_emulator/STM32F303K8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-g++ -o "bxse_f3_payload_emulator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/tristan/STM32CubeIDE/workspace_1.12.1/bxse_f3_payload_emulator/STM32F303K8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="bxse_f3_payload_emulator.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
+bxse_f3_payload_emulator.elf bxse_f3_payload_emulator.map: $(OBJS) $(USER_OBJS) /home/tristan/Documents/BinarX/bx_emulator/STM32CubeIDE_projects/bxse_f3_payload_emulator/STM32F303K8TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-g++ -o "bxse_f3_payload_emulator.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"/home/tristan/Documents/BinarX/bx_emulator/STM32CubeIDE_projects/bxse_f3_payload_emulator/STM32F303K8TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="bxse_f3_payload_emulator.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -lstdc++ -lsupc++ -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

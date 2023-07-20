@@ -34,11 +34,11 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usb.h \
  ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd_ex.h \
- ../Core/Inc/gpio_impl.h ../Core/Inc/gpio_interface.h \
+ ../Core/Inc/emulator.h ../Core/Inc/gpio_interface.h \
+ ../Core/Inc/serial_communication_interface.h \
+ ../Core/Inc/time_interface.h ../Core/Inc/gpio_impl.h \
  ../../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h755xx.h \
- ../Core/Inc/time_impl.h ../Core/Inc/time_interface.h \
- ../Core/Inc/serial_impl.h ../Core/Inc/serial_communication_interface.h \
- ../Core/Inc/emulator.h
+ ../Core/Inc/serial_impl.h ../Core/Inc/time_impl.h
 ../Core/Inc/main.h:
 ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal.h:
 ../Core/Inc/stm32h7xx_hal_conf.h:
@@ -75,11 +75,11 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd.h:
 ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_ll_usb.h:
 ../../Drivers/STM32H7xx_HAL_Driver/Inc/stm32h7xx_hal_pcd_ex.h:
-../Core/Inc/gpio_impl.h:
-../Core/Inc/gpio_interface.h:
-../../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h755xx.h:
-../Core/Inc/time_impl.h:
-../Core/Inc/time_interface.h:
-../Core/Inc/serial_impl.h:
-../Core/Inc/serial_communication_interface.h:
 ../Core/Inc/emulator.h:
+../Core/Inc/gpio_interface.h:
+../Core/Inc/serial_communication_interface.h:
+../Core/Inc/time_interface.h:
+../Core/Inc/gpio_impl.h:
+../../Drivers/CMSIS/Device/ST/STM32H7xx/Include/stm32h755xx.h:
+../Core/Inc/serial_impl.h:
+../Core/Inc/time_impl.h:
