@@ -74,7 +74,9 @@ void BinarXEmulator::Init() {
 }
 
 void BinarXEmulator::PayloadCommunicationCallback() {
-  payload_status_ = PayloadDataStatus::kPayloadReady;
+  if (payload_status_ == PayloadDataStatus::kWaitingForPayload) {
+    payload_status_ = PayloadDataStatus::kPayloadReady;
+  }
 }
 void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
 
