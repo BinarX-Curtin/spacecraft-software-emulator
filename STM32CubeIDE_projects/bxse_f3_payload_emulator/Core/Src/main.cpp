@@ -19,6 +19,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "ArduinoJson-v6.21.3.h"
+// #include "json_fwd.hpp"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -99,29 +102,39 @@ int main(void) {
   /* USER CODE BEGIN 2 */
 
   // This is random data to send
-  uint8_t random_msg[] = "This is the random payload data \n";
+//  uint8_t random_msg[] = "This is the random payload data \n";
+//
+//  // We need to copy the data into the buffer we created
+//  for (uint16_t i = 0; i < sizeof(random_msg); i++) {
+//    buffer[i] = random_msg[i];
+//  }
 
-  // We need to copy the data into the buffer we created
-  for (uint16_t i = 0; i < sizeof(random_msg); i++) {
-    buffer[i] = random_msg[i];
-  }
+//
+  StaticJsonDocument<200> doc;
+
+  // Add values in the document
+  doc["sensor"] = "gps";
+  doc["time"] = 1351824120;
+
+
+  serializeJsonPretty(doc, (char*)buffer,  kDataSize);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-	  // Make sure the GPIO is set to low
-	  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+    // Make sure the GPIO is set to low
+    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
 
     // Wait for the Emulator to be ready.
     if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
-
-    	// To transmit the data we need to call this function
-    	HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
-    	// then we can toggle the GPIO to let the emulator know we are ready to transmit
-    	HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin,GPIO_PIN_SET);
-    	HAL_Delay(10);
+      // To transmit the data we need to call this function
+      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
+      // then we can toggle the GPIO to let the emulator know we are ready to
+      // transmit
+      HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+      HAL_Delay(10);
     }
 
     /* USER CODE END WHILE */
