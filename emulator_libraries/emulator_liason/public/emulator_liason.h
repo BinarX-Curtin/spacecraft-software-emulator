@@ -15,9 +15,9 @@
 namespace binarx::emulator_liason {
 
 /**> Max payload data size allowed */
-constexpr uint16_t kMaxPayloadDataLength = 200;
-/**> Max payload data size allowed */
-constexpr uint16_t kPacketDataLength = 200;
+constexpr uint16_t kPacketDataLength = 250;
+/**> The time to wait for a communication transaction in milliseconds*/
+constexpr uint32_t kDefaultCommunicationDelay = 10000;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
