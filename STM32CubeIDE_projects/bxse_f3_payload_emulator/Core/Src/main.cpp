@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include<stdlib.h>
+
 #include "ArduinoJson-v6.21.3.h"
 // #include "json_fwd.hpp"
 
@@ -49,9 +51,16 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // Data size as defined by emulator largest packet size
-#define kDataSize 200
+#define kDataSize 10000
 // Create a buffer where you will store the data
 uint8_t buffer[kDataSize];
+bool waiting_for_transmision= false;
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
+{
+    waiting_for_transmision=false;
+    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+}
 
 /* USER CODE END PV */
 
@@ -101,6 +110,9 @@ int main(void) {
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
+  // Make sure the GPIO is set to low
+  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+
   // This is random data to send
 //  uint8_t random_msg[] = "This is the random payload data \n";
 //
@@ -110,32 +122,46 @@ int main(void) {
 //  }
 
 //
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<kDataSize> doc;
 
   // Add values in the document
-  doc["sensor"] = "gps";
-  doc["time"] = 1351824120;
+  doc["sensor"] = "Test";
+
+  int kMaxDelayTime = 20; // miliseconds
+  int extra_numbers = 200;
+
+  JsonArray data = doc.createNestedArray("data");
+   for(int i=0; i < extra_numbers; i++){
+ 	  data.add(extra_numbers);
+   }
+
+  // Test different delays to make sure the emulator can handle it
+  srand((unsigned) HAL_GetTick());
+  int random_number = 1;// rand()%kMaxDelayTime;
+  HAL_Delay(random_number);
 
 
-  serializeJsonPretty(doc, (char*)buffer,  kDataSize);
+  doc["time"] = random_number;
+  doc["memory"] = doc.memoryUsage();
+
+  serializeJson(doc, (char*)buffer,  kDataSize);
+
+  waiting_for_transmision = true;
+
+  HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
+  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+
+// To transmit the data we need to call this function
+
+
+
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // Make sure the GPIO is set to low
-    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
-
-    // Wait for the Emulator to be ready.
-    if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
-      // To transmit the data we need to call this function
-      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
-      // then we can toggle the GPIO to let the emulator know we are ready to
-      // transmit
-      HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
-      HAL_Delay(10);
-    }
 
     /* USER CODE END WHILE */
 

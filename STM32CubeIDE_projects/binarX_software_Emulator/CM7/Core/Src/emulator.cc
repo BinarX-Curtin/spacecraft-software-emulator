@@ -60,7 +60,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     // Otherwise send error message
     char error_msg[] =
         "ERROR: Sorry the message was not received correctly by the Binar "
-        "Emulator \n ";
+        "Emulator \r \n ";
     computer_communication_.Transmit((uint8_t *)error_msg, strlen(error_msg),
                                      kDefaultCommunicationDelay);
   }
@@ -88,14 +88,14 @@ void BinarXEmulator::RunStartInfo() {
   gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
-      "INFO: Button pressed and waiting for SPI transmission \n";
+      "\n \r INFO: Button pressed and waiting for SPI transmission \r \n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 }
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "INFO: Turning emulator off \n";
+  uint8_t info_msg[] = "\n \r INFO: Turning emulator off \r \n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 

@@ -15,7 +15,7 @@
 namespace binarx_emulator {
 
 /**> Max payload data size allowed */
-constexpr uint16_t kMaxPayloadDataLength = 200;
+constexpr uint16_t kMaxPayloadDataLength = 10000;
 /**> The time the Payload is allowed to be on for in milliseconds*/
 constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 /**> The time to wait for a communication transaction*/
