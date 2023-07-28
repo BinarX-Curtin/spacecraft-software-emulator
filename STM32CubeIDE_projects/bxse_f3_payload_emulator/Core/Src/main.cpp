@@ -56,11 +56,11 @@ UART_HandleTypeDef huart2;
 uint8_t buffer[kDataSize];
 volatile bool waiting_for_transmision= false;
 
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
-{
-    waiting_for_transmision=false;
-    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
-}
+//void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
+//{
+//    waiting_for_transmision=false;
+//    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+//}
 
 /* USER CODE END PV */
 
@@ -113,7 +113,7 @@ int main(void) {
   // Make sure the GPIO is set to low
   HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
 
-  int kMaxDelayTime = 20; // miliseconds
+  int kMaxDelayTime = 200; // miliseconds
   srand((unsigned) HAL_GetTick());
 
   StaticJsonDocument<200> doc;
@@ -125,15 +125,6 @@ int main(void) {
 
 
 
-//      serializeJson(doc, (char*)buffer,  kDataSize);
-//    serializeJsonPretty(doc, (char*)buffer,  kDataSize);
-
-
-//
-//  StaticJsonDocument<kDataSize> doc;
-//
-//  // Add values in the document
-//  doc["sensor"] = "Test";
 //
 //
 //  int extra_numbers = 200;
@@ -165,7 +156,7 @@ int main(void) {
 
 	    	  serializeJson(doc, (char*)buffer,  kDataSize);
 
-
+	    	  waiting_for_transmision = true;
 	      // To transmit the data we need to call this function
 	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
 	      // then we can toggle the GPIO to let the emulator know we are ready to
