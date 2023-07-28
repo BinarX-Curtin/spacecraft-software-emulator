@@ -51,10 +51,10 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // Data size as defined by emulator largest packet size
-#define kDataSize 10000
+#define kDataSize 200
 // Create a buffer where you will store the data
 uint8_t buffer[kDataSize];
-bool waiting_for_transmision= false;
+volatile bool waiting_for_transmision= false;
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
 {
@@ -113,46 +113,37 @@ int main(void) {
   // Make sure the GPIO is set to low
   HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
 
-  // This is random data to send
-//  uint8_t random_msg[] = "This is the random payload data \n";
-//
-//  // We need to copy the data into the buffer we created
-//  for (uint16_t i = 0; i < sizeof(random_msg); i++) {
-//    buffer[i] = random_msg[i];
-//  }
-
-//
-  StaticJsonDocument<kDataSize> doc;
-
-  // Add values in the document
-  doc["sensor"] = "Test";
-
   int kMaxDelayTime = 20; // miliseconds
-  int extra_numbers = 200;
-
-  JsonArray data = doc.createNestedArray("data");
-   for(int i=0; i < extra_numbers; i++){
- 	  data.add(extra_numbers);
-   }
-
-  // Test different delays to make sure the emulator can handle it
   srand((unsigned) HAL_GetTick());
-  int random_number = 1;// rand()%kMaxDelayTime;
-  HAL_Delay(random_number);
+
+  StaticJsonDocument<200> doc;
+
+    // Add values in the document
+    doc["sensor"] = "Test";
+    doc["time"] = 0;
+    doc["memory"] = doc.memoryUsage();
 
 
-  doc["time"] = random_number;
-  doc["memory"] = doc.memoryUsage();
 
-  serializeJson(doc, (char*)buffer,  kDataSize);
+//      serializeJson(doc, (char*)buffer,  kDataSize);
+//    serializeJsonPretty(doc, (char*)buffer,  kDataSize);
 
-  waiting_for_transmision = true;
 
-  HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
-
-// To transmit the data we need to call this function
+//
+//  StaticJsonDocument<kDataSize> doc;
+//
+//  // Add values in the document
+//  doc["sensor"] = "Test";
+//
+//
+//  int extra_numbers = 200;
+//
+//  JsonArray data = doc.createNestedArray("data");
+//   for(int i=0; i < extra_numbers; i++){
+// 	  data.add(extra_numbers);
+//   }
+//
+//  waiting_for_transmision = true;
 
 
 
@@ -162,6 +153,26 @@ int main(void) {
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
+	  // Make sure the GPIO is set to low
+	    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+
+	    // Wait for the Emulator to be ready.
+	    if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
+	    	// Test different delays to make sure the emulator can handle it
+	    	  int random_number = rand()%kMaxDelayTime;
+	    	  HAL_Delay(random_number);
+	    	  doc["time"] = random_number;
+
+	    	  serializeJson(doc, (char*)buffer,  kDataSize);
+
+
+	      // To transmit the data we need to call this function
+	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
+	      // then we can toggle the GPIO to let the emulator know we are ready to
+	      // transmit
+	      HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+	      HAL_Delay(10);
+	    }
 
     /* USER CODE END WHILE */
 
