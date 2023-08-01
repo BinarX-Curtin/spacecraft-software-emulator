@@ -8,7 +8,7 @@
             "name": "gtest",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/emulator_libraries/bazel-bin/emulator_liason/test/emulator_liason_test",
+            "program": "${workspaceFolder}/emulator_libraries/bazel-bin/emulator/test/emulator_test",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/emulator_libraries/",

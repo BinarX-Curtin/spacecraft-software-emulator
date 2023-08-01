@@ -156,6 +156,10 @@ int main(void) {
 
 	    	  serializeJson(doc, (char*)buffer,  kDataSize);
 
+//	    	  uint8_t metadata_buffer[2] = {5,1};
+	    	  buffer[0] = 5;
+	    	  buffer[1] = 1;
+
 	    	  waiting_for_transmision = true;
 	      // To transmit the data we need to call this function
 	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);

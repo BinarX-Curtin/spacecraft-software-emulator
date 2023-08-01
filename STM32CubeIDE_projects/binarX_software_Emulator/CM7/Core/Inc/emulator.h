@@ -15,11 +15,17 @@
 namespace binarx_emulator {
 
 /**> Max payload data size allowed */
-constexpr uint16_t kMaxPayloadDataLength = 10000;
+constexpr uint16_t kMaxPayloadDataLength = 1000;
 /**> The time the Payload is allowed to be on for in milliseconds*/
 constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 /**> The time to wait for a communication transaction*/
 constexpr uint32_t kDefaultCommunicationDelay = kWaitForPayloadMaxTime;
+/**> Packet Length*/
+constexpr uint16_t kPacketLength = 250;
+/**> Synck byte value used to determine if The SPI transmision failed*/
+constexpr uint8_t kSyncByte = 5;
+
+constexpr uint8_t kAllolwedMetadataAttempts = 5;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
@@ -45,7 +51,8 @@ class BinarXEmulator {
         gpio_controller_(gpio_object),
         time_controller_(time_object),
         button_pressed_(false),
-        payload_status_(PayloadDataStatus::kWaitingForPayload){};
+        payload_status_(PayloadDataStatus::kWaitingForPayload),
+        attempt_counter_(0){};
 
   /**
    * @brief Function that initialises the Emulator.
@@ -106,6 +113,12 @@ class BinarXEmulator {
    */
   void PayloadCommunicationHandler();
 
+  /**
+   * @brief Function to handle the errors that the emulator might encounter
+   *
+   */
+  void ErrorHandler();
+
  protected:
   /**
    * @brief Enum that identifies the possible states of the payload as observed
@@ -119,6 +132,10 @@ class BinarXEmulator {
   enum class PayloadDataStatus {
     kWaitingForPayload,
     kPayloadReady,
+    kErrorWithMetadataPacket,
+    kErrorTooManyPackets,
+    kFaiulureToReceiveAllPackets,
+    kDataReceivedSuccesfully,
     kTrasferCompleted,
   };
 
@@ -140,6 +157,7 @@ class BinarXEmulator {
    *
    */
   PayloadDataStatus payload_status_;
+  uint8_t attempt_counter_;
 };
 
 }  // namespace binarx_emulator
