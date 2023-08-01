@@ -1,2 +1,0 @@
-time_impl.cc:15:6:virtual void binarx_time_impl::TimeImpl::Delay(uint32_t)	1
-time_impl.cc:17:10:virtual uint32_t binarx_time_impl::TimeImpl::GetTicks()	1

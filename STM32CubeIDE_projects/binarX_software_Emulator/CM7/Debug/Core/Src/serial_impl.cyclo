@@ -1,5 +1,0 @@
-serial_impl.cc:12:39:virtual binarx_serial_interface::SerialStatus binarx_serial_impl::SpiImpl::Transmit(uint8_t*, uint16_t, uint32_t)	1
-serial_impl.cc:19:39:virtual binarx_serial_interface::SerialStatus binarx_serial_impl::SpiImpl::Receive(uint8_t*, uint16_t, uint32_t)	1
-serial_impl.cc:27:39:virtual binarx_serial_interface::SerialStatus binarx_serial_impl::UartImpl::Transmit(uint8_t*, uint16_t, uint32_t)	1
-serial_impl.cc:34:39:virtual binarx_serial_interface::SerialStatus binarx_serial_impl::UartImpl::Receive(uint8_t*, uint16_t, uint32_t)	1
-serial_impl.cc:42:39:binarx_serial_interface::SerialStatus binarx_serial_impl::SerialErrorHandler(HAL_StatusTypeDef)	5

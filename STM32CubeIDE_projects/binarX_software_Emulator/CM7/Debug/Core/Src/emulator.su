@@ -1,7 +1,0 @@
-../Core/Src/emulator.cc:14:6:void binarx_emulator::BinarXEmulator::Run()	24	static
-../Core/Src/emulator.cc:38:6:void binarx_emulator::BinarXEmulator::PayloadCommunicationHandler()	10112	static
-../Core/Src/emulator.cc:74:6:void binarx_emulator::BinarXEmulator::Init()	16	static
-../Core/Src/emulator.cc:79:6:void binarx_emulator::BinarXEmulator::PayloadReadyInterruptCallback()	16	static
-../Core/Src/emulator.cc:84:6:void binarx_emulator::BinarXEmulator::ButtonPressCallback()	16	static
-../Core/Src/emulator.cc:86:6:void binarx_emulator::BinarXEmulator::RunStartInfo()	88	static
-../Core/Src/emulator.cc:96:6:void binarx_emulator::BinarXEmulator::RunEndInfo()	64	static
