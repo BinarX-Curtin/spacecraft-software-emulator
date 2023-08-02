@@ -6,7 +6,6 @@
  */
 
 #include "gpio_impl.h"
-
 #include "gpio_interface.h"
 #include "main.h"
 
@@ -20,16 +19,6 @@ void GpioImpl::SetLow(binarx_gpio_interface::GpioSelector gpio) {
 }
 void GpioImpl::TogglePin(binarx_gpio_interface::GpioSelector gpio) {
   HAL_GPIO_TogglePin(GetPort(gpio), GetPin(gpio));
-}
-binarx_gpio_interface::GpioStatus GpioImpl::WaitForInterrupt(
-    binarx_gpio_interface::GpioSelector gpio, uint32_t timeout) {
-  for (uint32_t i = timeout; i > 0; i--) {
-    if (HAL_GPIO_ReadPin(GetPort(gpio), GetPin(gpio)) == GPIO_PIN_SET) {
-      return binarx_gpio_interface::GpioStatus::Success;
-    }
-    HAL_Delay(10);
-  }
-  return binarx_gpio_interface::GpioStatus::Timeout;
 }
 
 uint16_t GpioImpl::GetPin(binarx_gpio_interface::GpioSelector gpio) {

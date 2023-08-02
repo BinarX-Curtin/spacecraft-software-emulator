@@ -49,13 +49,5 @@ class GpioInterface {
    *
    */
   virtual void TogglePin(GpioSelector gpio) = 0;
-  /**
-   * @brief Wait for the pin to go high
-   *
-   * @param gpio The Gpio to check if it goes high
-   * @param timeout The ammount of time to wait for the pin to go high
-   * @return GpioStatus Is the return status of the function
-   */
-  virtual GpioStatus WaitForInterrupt(GpioSelector gpio, uint32_t timeout) = 0;
-};
+
 }  // namespace binarx_gpio_interface

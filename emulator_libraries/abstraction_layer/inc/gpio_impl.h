@@ -17,8 +17,6 @@ class GpioImpl : public binarx_gpio_interface::GpioInterface {
   void SetHigh(binarx_gpio_interface::GpioSelector gpio);
   void SetLow(binarx_gpio_interface::GpioSelector gpio);
   void TogglePin(binarx_gpio_interface::GpioSelector gpio);
-  binarx_gpio_interface::GpioStatus WaitForInterrupt(
-      binarx_gpio_interface::GpioSelector gpio, uint32_t timeout);
 
  private:
   uint16_t GetPin(binarx_gpio_interface::GpioSelector gpio);
