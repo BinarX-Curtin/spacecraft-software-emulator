@@ -55,9 +55,6 @@ class GpioMock : public binarx_gpio_interface::GpioInterface {
   MOCK_METHOD(void, SetLow, (binarx_gpio_interface::GpioSelector), (override));
   MOCK_METHOD(void, TogglePin, (binarx_gpio_interface::GpioSelector),
               (override));
-  MOCK_METHOD(binarx_gpio_interface::GpioStatus, WaitForInterrupt,
-              (binarx_gpio_interface::GpioSelector, uint32_t timeout),
-              (override));
 };
 
 MATCHER_P2(ArraysAreEqual, array, size, "") {

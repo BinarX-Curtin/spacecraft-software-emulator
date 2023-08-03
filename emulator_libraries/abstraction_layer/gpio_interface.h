@@ -17,12 +17,6 @@ namespace binarx_gpio_interface {
 enum GpioSelector { Button, YellowLed, GreenLed, RedLed, PayloadReady };
 
 /**
- * @brief Gpio enum that identifies the return options.
- *
- */
-enum GpioStatus { Success, Timeout };
-
-/**
  * @brief The GPIO interface to allow for dependency injection and testing
  *
  */
@@ -49,5 +43,5 @@ class GpioInterface {
    *
    */
   virtual void TogglePin(GpioSelector gpio) = 0;
-
+};
 }  // namespace binarx_gpio_interface

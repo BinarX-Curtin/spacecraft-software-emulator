@@ -7,7 +7,6 @@
  */
 
 #include "gpio_interface.h"
-#include "stm32h755xx.h"
 
 namespace binarx_gpio_impl {
 
