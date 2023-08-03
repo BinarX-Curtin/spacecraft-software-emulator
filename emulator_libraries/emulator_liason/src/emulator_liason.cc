@@ -26,7 +26,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size,
   }
 
   // create a buffer with
-  uint16_t buffer_size = data_size + kNumBytesInHeader;
+  uint16_t buffer_size = num_packets * kPacketDataLength + kNumBytesInHeader;
   uint8_t buffer[buffer_size];
   buffer[0] = kSyncByte;
   buffer[1] = num_packets;

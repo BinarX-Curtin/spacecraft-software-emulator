@@ -6,7 +6,6 @@
 
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
-#include "abstraction_layer/time_interface.h"
 
 using namespace ::testing;
 
