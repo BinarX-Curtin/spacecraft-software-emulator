@@ -13,6 +13,8 @@ namespace binarx::emulator_liason {
 
 void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size,
                               uint32_t timeout) {
+  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::PayloadReady);
+
   // The sync byte value to know that the payload transfered data succesfully
   // and it was not random noice
   constexpr uint8_t kSyncByte = 5;

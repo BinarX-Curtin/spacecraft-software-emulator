@@ -136,6 +136,10 @@ TEST_P(EmulatorLiasonParameterizedTestFixture1,
               SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady))
       .Times(1);
 
+  EXPECT_CALL(gpio_mock,
+              SetLow(binarx_gpio_interface::GpioSelector::PayloadReady))
+      .Times(1);
+
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer, sizeof(data_buffer),
                            binarx::emulator_liason::kDefaultCommunicationDelay);
