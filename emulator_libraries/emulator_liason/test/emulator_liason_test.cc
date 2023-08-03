@@ -131,6 +131,11 @@ TEST_P(EmulatorLiasonParameterizedTestFixture1,
       Transmit(ArraysAreEqual(buffer, sizeof(buffer)), sizeof(buffer), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
+  // Expect for the GPIO line to be set high
+  EXPECT_CALL(gpio_mock,
+              SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady))
+      .Times(1);
+
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer, sizeof(data_buffer),
                            binarx::emulator_liason::kDefaultCommunicationDelay);

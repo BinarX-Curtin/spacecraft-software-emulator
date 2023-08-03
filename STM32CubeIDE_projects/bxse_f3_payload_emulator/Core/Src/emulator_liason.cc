@@ -14,7 +14,7 @@ namespace binarx::emulator_liason {
 void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size,
                               uint32_t timeout) {
   // The sync byte value to know that the payload transfered data succesfully
-  // and it was not random noice
+  // and it was not random noise
   constexpr uint8_t kSyncByte = 5;
   constexpr uint8_t kNumBytesInHeader = 2;
 
