@@ -22,6 +22,11 @@
 #include<stdlib.h>
 
 #include "ArduinoJson-v6.21.3.h"
+#include "emulator_liason.h"
+#include "gpio_impl.h"
+#include "gpio_interface.h"
+#include "serial_communication_interface.h"
+#include "serial_impl.h"
 // #include "json_fwd.hpp"
 
 /* Private includes ----------------------------------------------------------*/
@@ -51,10 +56,14 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 // Data size as defined by emulator largest packet size
-#define kDataSize 200
+#define kDataSize 1000
 // Create a buffer where you will store the data
 uint8_t buffer[kDataSize];
 volatile bool waiting_for_transmision= false;
+
+binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
+binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
+binarx::emulator_liason::EmulatorLiason emulator_liason = binarx::emulator_liason::EmulatorLiason(spi_controller,  gpio_controller);
 
 //void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
 //{
@@ -116,7 +125,7 @@ int main(void) {
   int kMaxDelayTime = 200; // miliseconds
   srand((unsigned) HAL_GetTick());
 
-  StaticJsonDocument<200> doc;
+  StaticJsonDocument<400> doc;
 
     // Add values in the document
     doc["sensor"] = "Test";
@@ -127,12 +136,12 @@ int main(void) {
 
 //
 //
-//  int extra_numbers = 200;
-//
-//  JsonArray data = doc.createNestedArray("data");
-//   for(int i=0; i < extra_numbers; i++){
-// 	  data.add(extra_numbers);
-//   }
+  int extra_numbers = 200;
+
+  JsonArray data = doc.createNestedArray("data");
+   for(int i=0; i < extra_numbers; i++){
+ 	  data.add(extra_numbers);
+   }
 //
 //  waiting_for_transmision = true;
 
@@ -151,21 +160,22 @@ int main(void) {
 	    if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
 	    	// Test different delays to make sure the emulator can handle it
 	    	  int random_number = rand()%kMaxDelayTime;
-	    	  HAL_Delay(random_number);
 	    	  doc["time"] = random_number;
+	    	  HAL_Delay(random_number);
 
 	    	  serializeJson(doc, (char*)buffer,  kDataSize);
 
 //	    	  uint8_t metadata_buffer[2] = {5,1};
-	    	  buffer[0] = 5;
-	    	  buffer[1] = 1;
-
-	    	  waiting_for_transmision = true;
+//	    	  buffer[0] = 5;
+//	    	  buffer[1] = 1;
+//
+//	    	  waiting_for_transmision = true;
 	      // To transmit the data we need to call this function
-	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
+//	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1, buffer, kDataSize);
+	    	  emulator_liason.Transmit(buffer, doc.memoryUsage(), 1000);
 	      // then we can toggle the GPIO to let the emulator know we are ready to
 	      // transmit
-	      HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+//	      HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
 	      HAL_Delay(10);
 	    }
 
