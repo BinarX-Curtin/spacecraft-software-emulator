@@ -91,31 +91,44 @@ class EmulatorLiasonTest : public testing::Test {
   EmulatorLiasonMockTesting emulator_liason =
       EmulatorLiasonMockTesting(emulator_com_mock, gpio_mock);
 
-  uint8_t kSynkByte = 5;
+  uint8_t kSyncByte = 5;
+  uint8_t kNumberOfBytesInHeader = 2;
+  uint16_t kPacketDataLength = 250;
 };
 
-TEST_F(EmulatorLiasonTest, Transmit_PacketTransferSuccess) {
+// -- --Parametised Tests-- --
+
+class EmulatorLiasonParameterizedTestFixture1
+    : public EmulatorLiasonTest,
+      public ::testing::WithParamInterface<uint8_t> {};
+
+TEST_P(EmulatorLiasonParameterizedTestFixture1,
+       Transmit_MultiplePacketTransferSuccess) {
+  uint8_t expected_packet_num = GetParam();
+
   // Given a buffer with data to send to the emulator
-  uint8_t data_buffer[binarx::emulator_liason::kPacketDataLength];
-  for (uint16_t i = 0; i < sizeof(data_buffer) - sizeof(data_buffer) + 1; i++) {
+  uint16_t data_buffer_size =
+      binarx::emulator_liason::kPacketDataLength * expected_packet_num;
+  uint8_t data_buffer[data_buffer_size];
+  for (uint16_t i = 0; i < data_buffer_size; i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
-  // The packet buffer to receive
-  uint8_t expected_packet_num = 1;
-  uint8_t packet_num_buffer[2] = {kSynkByte, expected_packet_num};
+  // create a buffer with
+  uint16_t buffer_size =
+      expected_packet_num * kPacketDataLength + kNumberOfBytesInHeader;
+  uint8_t buffer[buffer_size];
+  buffer[0] = kSyncByte;
+  buffer[1] = expected_packet_num;
 
-  // We expect a fisrt paquet to say that one packet will be transmitted
+  for (uint16_t i = 0; i < buffer_size; i++) {
+    buffer[i + 2] = data_buffer[i];
+  };
+
+  // transmit all this bytes
   EXPECT_CALL(
       emulator_com_mock,
-      Transmit(ArraysAreEqual(packet_num_buffer, sizeof(packet_num_buffer)),
-               sizeof(packet_num_buffer), _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  // And another transmission request with the data
-  EXPECT_CALL(emulator_com_mock,
-              Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
-                       sizeof(data_buffer), _))
+      Transmit(ArraysAreEqual(buffer, sizeof(buffer)), sizeof(buffer), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
@@ -123,33 +136,6 @@ TEST_F(EmulatorLiasonTest, Transmit_PacketTransferSuccess) {
                            binarx::emulator_liason::kDefaultCommunicationDelay);
 }
 
-TEST_F(EmulatorLiasonTest, Transmit_MultiplePacketTransferSuccess) {
-  uint8_t expected_packet_num = 6;
-
-  // Given a buffer with data to send to the emulator
-  uint8_t data_buffer[binarx::emulator_liason::kPacketDataLength *
-                      expected_packet_num];
-  for (uint16_t i = 0; i < sizeof(data_buffer) - sizeof(data_buffer) + 1; i++) {
-    data_buffer[i] = static_cast<uint8_t>(i);
-  };
-
-  // The packet buffer to receive
-  uint8_t packet_num_buffer[2] = {kSynkByte, expected_packet_num};
-
-  // We expect a fisrt paquet to say that one packet will be transmitted
-  EXPECT_CALL(
-      emulator_com_mock,
-      Transmit(ArraysAreEqual(packet_num_buffer, sizeof(packet_num_buffer)),
-               sizeof(packet_num_buffer), _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  // And another transmission request with the data
-  EXPECT_CALL(emulator_com_mock,
-              Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
-                       sizeof(data_buffer), _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  // When Payload Comunication is called
-  emulator_liason.Transmit(data_buffer, sizeof(data_buffer),
-                           binarx::emulator_liason::kDefaultCommunicationDelay);
-}
+INSTANTIATE_TEST_CASE_P(SuccessPacketNumberTest,
+                        EmulatorLiasonParameterizedTestFixture1,
+                        ::testing::Values(1, 2, 6, 10));
