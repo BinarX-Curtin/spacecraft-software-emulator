@@ -137,14 +137,14 @@ void BinarXEmulator::RunStartInfo() {
   gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
-      "INFO: Button pressed and waiting for SPI transmission \n";
+      "\r\nINFO: Button pressed and waiting for SPI transmission\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 }
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "INFO: Turning emulator off \n";
+  uint8_t info_msg[] = "\r\nINFO: Turning emulator off\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 
