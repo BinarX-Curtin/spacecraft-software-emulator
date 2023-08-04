@@ -5,7 +5,7 @@
  * project
  *
  */
-
+#pragma once
 #include "abstraction_layer/time_interface.h"
 
 namespace binarx_time_impl {

@@ -14,8 +14,7 @@ namespace binarx_serial_impl {
 binarx_serial_interface::SerialStatus SpiImpl::Transmit(uint8_t *buffer,
                                                         uint16_t size,
                                                         uint32_t timeout) {
-  HAL_StatusTypeDef hal_status =
-      HAL_SPI_Transmit(&hspi1, buffer, size, timeout);
+  HAL_StatusTypeDef hal_status = HAL_SPI_Transmit_IT(&hspi1, buffer, size);
   return SerialErrorHandler(hal_status);
 };
 binarx_serial_interface::SerialStatus SpiImpl::Receive(uint8_t *receive_buffer,

@@ -6,7 +6,7 @@
  */
 
 #include "abstraction_layer/inc/gpio_impl.h"
-#include "stm32h755xx.h"
+#include "main.h"
 
 namespace binarx_gpio_impl {
 
