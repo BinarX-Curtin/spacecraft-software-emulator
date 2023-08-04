@@ -144,7 +144,7 @@ void BinarXEmulator::RunStartInfo() {
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "\r\nINFO: Turning emulator off \r\n";
+  uint8_t info_msg[] = "\r\nINFO: Turning emulator off\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 
