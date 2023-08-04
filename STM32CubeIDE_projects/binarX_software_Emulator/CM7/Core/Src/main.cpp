@@ -21,13 +21,11 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "emulator.h"
-#include "gpio_impl.h"
-#include "gpio_interface.h"
-#include "serial_communication_interface.h"
-#include "serial_impl.h"
+#include "emulator/public/emulator.h"
+#include "abstraction_layer/inc/gpio_impl.h"
+#include "abstraction_layer/inc/serial_impl.h"
 #include "string.h"
-#include "time_impl.h"
+#include "abstraction_layer/inc/time_impl.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/

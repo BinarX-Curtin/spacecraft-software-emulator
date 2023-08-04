@@ -22,11 +22,11 @@
 #include<stdlib.h>
 
 #include "ArduinoJson-v6.21.3.h"
-#include "emulator_liason.h"
-#include "gpio_impl.h"
-#include "gpio_interface.h"
-#include "serial_communication_interface.h"
-#include "serial_impl.h"
+#include "emulator_liason/public/emulator_liason.h"
+#include "abstraction_layer/inc/gpio_impl.h"
+#include "abstraction_layer/gpio_interface.h"
+#include "abstraction_layer/serial_communication_interface.h"
+#include "abstraction_layer/inc/serial_impl.h"
 // #include "json_fwd.hpp"
 
 /* Private includes ----------------------------------------------------------*/
