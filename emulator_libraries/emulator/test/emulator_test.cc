@@ -151,15 +151,15 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
   emulator.Run();
 }
 
-TEST_F(EmulatorTest, Run_IsRedLedOn) {
+TEST_F(EmulatorTest, Run_IsGreenLedOn) {
   EXPECT_CALL(gpio_mock, SetHigh(_)).Times(AnyNumber());
   // Has the Red Led turn on when the emulator starts running
-  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::RedLed))
+  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   EXPECT_CALL(gpio_mock, SetLow(_)).Times(AnyNumber());
   // And is it turned off
-  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
+  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   emulator.SetButtonPressed_TestOnly(true);
