@@ -55,11 +55,6 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-// Data size as defined by emulator largest packet size
-#define kDataSize 1000
-// Create a buffer where you will store the data
-uint8_t buffer[kDataSize];
-
 
 binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
 binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
@@ -126,20 +121,24 @@ int main(void) {
   int kMaxDelayTime = 200;  // miliseconds
   srand((unsigned)HAL_GetTick());
 
-  StaticJsonDocument<400> doc;
+  StaticJsonDocument<1000> doc;
 
   // Add values in the document
   doc["sensor"] = "Test";
   doc["time"] = 0;
-  doc["memory"] = doc.memoryUsage();
+  doc["memory_doc"] = doc.memoryUsage();
+  doc["memory_buffer"] =0;
 
   //
   //
-  int extra_numbers = 200;
+  int extra_numbers = 170;
 
   JsonArray data = doc.createNestedArray("data");
   for (int i = 0; i < extra_numbers; i++) {
-    data.add(extra_numbers);
+    if(!data.add(doc.memoryUsage())){
+    	data[0] = i;
+    	break;
+    }
   }
   //
   //  waiting_for_transmision = true;
@@ -157,13 +156,21 @@ int main(void) {
       // Test different delays to make sure the emulator can handle it
       int random_number = rand() % kMaxDelayTime;
       doc["time"] = random_number;
+      doc["memory_doc"] = doc.memoryUsage();
       HAL_Delay(random_number);
 
-      serializeJsonPretty(doc, (char *)buffer, kDataSize);
+      // Data size as defined by emulator largest packet size (+ 1 to add the null terminator byte)
+      int kDataSize = measureJson(doc) + 1;
+      // Create a buffer where you will store the data
+      uint8_t buffer[kDataSize];
+
+      doc["memory_buffer"] = kDataSize;
+
+      serializeJson(doc, (char *)buffer, (uint16_t) kDataSize);
 
       // To transmit the data we need to call this function
       //	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1,
-      //buffer, kDataSize);
+      // buffer, kDataSize);
 
       emulator_liason.Transmit(buffer, doc.memoryUsage(), 1000);
       HAL_Delay(10);
