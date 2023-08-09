@@ -11,8 +11,8 @@
 
 namespace binarx::emulator_liason {
 
-void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size,
-                              uint32_t timeout) {
+void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
+  // make sure the pin is low
   gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::PayloadReady);
 
   // The sync byte value to know that the payload transfered data succesfully
@@ -21,7 +21,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size,
   constexpr uint8_t kNumBytesInHeader = 2;
 
   // Calculate number of packets
-  uint8_t num_packets = data_size / kPacketDataLength;
+  uint16_t num_packets = data_size / kPacketDataLength;
   // Add an extra packets if the data above has a reminder
   if (data_size % kPacketDataLength != 0) {
     num_packets++;

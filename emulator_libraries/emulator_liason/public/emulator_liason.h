@@ -38,7 +38,7 @@ class EmulatorLiason {
         gpio_controller_(gpio_object),
         payload_status_(PayloadDataStatus::kPayloadReady){};
 
-  void Transmit(uint8_t* buffer, uint16_t size, uint32_t timeout);
+  void Transmit(uint8_t* buffer, uint16_t size);
 
  private:
   /**< Reference to the payload comunication implementation*/
