@@ -87,7 +87,16 @@ This sections assumes that you have downloaded and flashed, or uploaded, the cod
 
 ### Emulator Error messages and possible causes
 1. "ERROR: The number of packets that must be sent by the payload was not received correctly" 
-    - 
+    - The probable cause is that the payload_ready pin is not connected correctly. 
+2. "ERROR: The number of packets is too large and there will not be enough space to store the information"
+    - The payload data is too large for the emulator limits
+    - or you have incorrectly requested to transmit more data that you had intended
+3. "ERROR: Sorry the message was not received correctly by the Binar Emulator"
+    - The size of the payload data was received correctly by the emulator but an error opccured during the transmision of the data. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
+4. "ERROR: Sorry an error occured with the Binar Emulator"
+    - This error is unlikely. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
+5. If the Emulator has timeout
+    - Then the payload ready pin did not trigger an interrupt on the emulator
 
 As Binar X documentation 
 
