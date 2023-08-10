@@ -9,6 +9,8 @@
 
 #include <string.h>
 
+#include <array>
+
 namespace binarx_emulator {
 
 void BinarXEmulator::Run() {
@@ -46,12 +48,13 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
 
   // create the packet buffer
-  uint8_t packet_buffer[kPacketLength] = {0};
+  std::array<uint8_t, kPacketLength> packet_buffer = {0};
 
   // Receive number of packets
-  constexpr uint8_t kNumberOfBytesInHeader = 2;
+  constexpr uint8_t kNumberOfBytesInHeader = 3;
   binarx_serial_interface::SerialStatus serial_status =
-      payload_communication_.Receive(packet_buffer, kNumberOfBytesInHeader,
+      payload_communication_.Receive(packet_buffer.data(),
+                                     kNumberOfBytesInHeader,
                                      kDefaultCommunicationDelay);
   // check if the header was received correctly and extract the number of
   // packets
@@ -75,35 +78,32 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   if (payload_status_ == PayloadDataStatus::kPayloadReady) {
     uint8_t num_of_packets = packet_buffer[1];
-    uint16_t kDataSize = num_of_packets * kPacketLength;
-    if (kDataSize > kMaxPayloadDataLength || num_of_packets == 0) {
+    const uint16_t kDataSize = num_of_packets * kPacketLength;
+    if (kDataSize > kMaxPayloadDataLength || num_of_packets <= 0) {
       // Error
       payload_status_ = PayloadDataStatus::kErrorTooManyPackets;
     } else {
-      uint8_t data_buffer[kDataSize];
+      std::array<uint8_t, kMaxPayloadDataLength> data_buffer = {0};
       for (uint8_t i = 0; i < num_of_packets; i++) {
         serial_status = payload_communication_.Receive(
-            packet_buffer, kPacketLength, kDefaultCommunicationDelay);
+            packet_buffer.data(), kPacketLength, kDefaultCommunicationDelay);
         // Break if any of the transactions fail
         if (serial_status != binarx_serial_interface::SerialStatus::Success) {
+          payload_status_ = PayloadDataStatus::kFaiulureToReceiveAllPackets;
           break;
         }
         uint16_t location_start_for_packet = i * kPacketLength;
         // copy data from packet buffer to data buffer
-        // change this to use spans when we move to c++20
-        for (uint16_t j = 0; j < kPacketLength; j++) {
-          data_buffer[location_start_for_packet + j] = packet_buffer[j];
-        }
+        std::copy(packet_buffer.begin(), packet_buffer.end(),
+                  data_buffer.begin() + location_start_for_packet);
       }
 
       // Check the status of the SPI transaction
-      if (serial_status == binarx_serial_interface::SerialStatus::Success) {
+      if (payload_status_ == PayloadDataStatus::kPayloadReady) {
         // Send the data over UART if SPI data was received succesfully
-        computer_communication_.Transmit(data_buffer, kDataSize,
+        computer_communication_.Transmit(data_buffer.data(), kDataSize,
                                          kDefaultCommunicationDelay);
         payload_status_ = PayloadDataStatus::kDataReceivedSuccesfully;
-      } else {
-        payload_status_ = PayloadDataStatus::kFaiulureToReceiveAllPackets;
       }
     }
   }
