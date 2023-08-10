@@ -41,17 +41,6 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   emulator_communication_.Transmit(buffer, buffer_size,
                                    kDefaultCommunicationDelay);
 
-  // uint8_t num_packets_buffer[kNumBytesInHeader] = {kSyncByte, num_packets};
-
-  // // Send data with number of packets
-  // emulator_communication_.Transmit(num_packets_buffer,
-  //                                  sizeof(num_packets_buffer),
-  //                                  kDefaultCommunicationDelay);
-
-  // // Send the data
-  // emulator_communication_.Transmit(data, data_size,
-  // kDefaultCommunicationDelay);
-
   gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady);
 }
 

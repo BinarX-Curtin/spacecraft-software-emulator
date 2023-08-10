@@ -99,7 +99,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
       // Check the status of the SPI transaction
       if (serial_status == binarx_serial_interface::SerialStatus::Success) {
         // Send the data over UART if SPI data was received succesfully
-        computer_communication_.Transmit(data_buffer, sizeof(data_buffer),
+        computer_communication_.Transmit(data_buffer, kDataSize,
                                          kDefaultCommunicationDelay);
         payload_status_ = PayloadDataStatus::kDataReceivedSuccesfully;
       } else {
@@ -144,7 +144,7 @@ void BinarXEmulator::RunStartInfo() {
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "\r\nINFO: Turning emulator off\r\n";
+  uint8_t info_msg[] = "\r\nINFO: Turning payload off\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 

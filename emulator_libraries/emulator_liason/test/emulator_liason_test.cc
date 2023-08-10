@@ -99,6 +99,28 @@ class EmulatorLiasonTest : public testing::Test {
   uint16_t kPacketDataLength = 250;
 };
 
+TEST_F(EmulatorLiasonTest, SuccessWithStdArray) {
+  constexpr uint16_t kDataSize = 252;
+  std::array<uint8_t, kDataSize> buffer = {0};
+  uint8_t count = 0;
+  for (auto& item : buffer) {
+    item = count++;
+  }
+
+  buffer[0] = kSyncByte;
+  buffer[1] = 1;
+
+  std::array<uint8_t, kDataSize - 2> data_buffer;
+  std::copy(buffer.begin() + 2, buffer.end(), data_buffer.begin());
+
+  EXPECT_CALL(emulator_com_mock,
+              Transmit(ArraysAreEqual(buffer.data(), kDataSize), kDataSize, _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
+  // When Payload Comunication is called
+  emulator_liason.Transmit(data_buffer.data(), data_buffer.size());
+}
+
 // -- --Parametised Tests-- --
 
 class EmulatorLiasonParameterizedTestFixture1
