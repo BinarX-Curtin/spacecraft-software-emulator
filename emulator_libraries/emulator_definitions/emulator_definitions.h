@@ -18,6 +18,6 @@ constexpr uint16_t kPacketLength = 250;
 /**> Synck byte value used to determine if The SPI transmision failed*/
 constexpr uint8_t kSyncByte = 5;
 /**< the number of bytes in the payload header*/
-constexpr uint8_t kNumberOfBytesInHeader = 2;
+constexpr uint8_t kNumberOfBytesInHeader = 3;
 
 }  // namespace binarx::emulator_definitions

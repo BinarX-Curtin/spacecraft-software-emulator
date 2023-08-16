@@ -17,6 +17,16 @@ namespace binarx::emulator {
 
 using namespace emulator_definitions;
 
+uint16_t CalculateNumberOfPackets(uint16_t data_size) {
+  // Calculate number of packets
+  uint16_t num_packets = data_size / kPacketLength;
+  // Add an extra packets if the data above has a reminder
+  if (data_size % kPacketLength != 0) {
+    num_packets++;
+  }
+  return num_packets;
+}
+
 void BinarXEmulator::Run() {
   // Wait for button push
   if (!button_pressed_) {
@@ -80,11 +90,12 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   attempt_counter_ = 0;
 
   if (payload_status_ == PayloadDataStatus::kPayloadReady) {
-    uint8_t num_of_packets = packet_buffer[1];
-    const uint16_t kDataSize = num_of_packets * kPacketLength;
-    if (kDataSize > kMaxPayloadDataLength || num_of_packets <= 0) {
+    const uint16_t kDataSize =
+        ((uint16_t)packet_buffer[1] << 8) | packet_buffer[2];
+    uint16_t num_of_packets = CalculateNumberOfPackets(kDataSize);
+    if (kDataSize > kMaxPayloadDataLength || kDataSize == 0) {
       // Error
-      payload_status_ = PayloadDataStatus::kErrorTooManyPackets;
+      payload_status_ = PayloadDataStatus::kErrorDataSize;
     } else {
       std::array<uint8_t, kMaxPayloadDataLength> data_buffer = {0};
       for (uint8_t i = 0; i < num_of_packets; i++) {
@@ -174,7 +185,7 @@ void BinarXEmulator::ErrorHandler() {
                                        strlen(metadata_error_msg),
                                        kDefaultCommunicationDelay);
       break;
-    case PayloadDataStatus::kErrorTooManyPackets:
+    case PayloadDataStatus::kErrorDataSize:
       computer_communication_.Transmit((uint8_t *)too_many_packets_error_msg,
                                        strlen(too_many_packets_error_msg),
                                        kDefaultCommunicationDelay);

@@ -128,7 +128,7 @@ class BinarXEmulator {
     kWaitingForPayload,
     kPayloadReady,
     kErrorWithMetadataPacket,
-    kErrorTooManyPackets,
+    kErrorDataSize,
     kFaiulureToReceiveAllPackets,
     kDataReceivedSuccesfully,
     kTrasferCompleted,

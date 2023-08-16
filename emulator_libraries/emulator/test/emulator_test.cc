@@ -105,24 +105,34 @@ class EmulatorTest : public testing::Test {
 
   EmulatorMockTesting emulator = EmulatorMockTesting(
       payload_com_mock, computer_com_mock, gpio_mock, time_mock);
-
-  uint8_t kSyncByte = 5;
-  uint8_t kSizeOfMetadataPacket = 2;
 };
+
+uint16_t CalculateNumberOfPackets(uint16_t data_size) {
+  // Calculate number of packets
+  uint16_t num_packets = data_size / kPacketLength;
+  // Add an extra packets if the data above has a reminder
+  if (data_size % kPacketLength != 0) {
+    num_packets++;
+  }
+  return num_packets;
+}
 
 TEST_F(EmulatorTest, Run_DataTransferSuccess) {
   // Given a buffer with data that is sent succesfully from the payload
   uint8_t kNumOfPaquets = 1;
-  uint8_t data_buffer[kNumOfPaquets * kPacketLength];
+  uint8_t kDataSize = kNumOfPaquets * kPacketLength;
+  uint8_t data_buffer[kDataSize];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(kDataSize >> 8),
+      static_cast<uint8_t>(kDataSize)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -219,16 +229,19 @@ TEST_F(EmulatorTest, EmulatorTimeout) {
 
 class EmulatorParameterizedTestFixture1
     : public EmulatorTest,
-      public ::testing::WithParamInterface<uint8_t> {};
+      public ::testing::WithParamInterface<uint16_t> {};
 
-TEST_P(EmulatorParameterizedTestFixture1, PacketNumError) {
-  // Given an erroneus packet number
-  uint8_t kNumOfPaquets = GetParam();
+TEST_P(EmulatorParameterizedTestFixture1, DataSizeError) {
+  // Given an erroneus data size number
+  uint16_t data_size = GetParam();
+  uint16_t kNumOfPaquets = CalculateNumberOfPackets(data_size);
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(data_size >> 8),
+      static_cast<uint8_t>(data_size)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -247,17 +260,18 @@ TEST_P(EmulatorParameterizedTestFixture1, PacketNumError) {
   emulator.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ErroneousPacketNumberTest, EmulatorParameterizedTestFixture1,
-    ::testing::Values(0, kMaxPayloadDataLength / kPacketLength + 1));
+INSTANTIATE_TEST_CASE_P(ErroneousDataSizeTest,
+                        EmulatorParameterizedTestFixture1,
+                        ::testing::Values(0, kMaxPayloadDataLength + 1));
 
 class EmulatorParameterizedTestFixture2
     : public EmulatorTest,
-      public ::testing::WithParamInterface<uint8_t> {};
+      public ::testing::WithParamInterface<uint16_t> {};
 
 TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
   // Given a buffer with data that is sent succesfully from the payload
-  uint8_t kNumOfPaquets = GetParam();
+  uint16_t data_size = GetParam();
+  uint16_t kNumOfPaquets = CalculateNumberOfPackets(data_size);
   uint8_t packet_buffer[kPacketLength];
   for (uint16_t i = 0; i < sizeof(packet_buffer); i++) {
     packet_buffer[i] = static_cast<uint8_t>(i);
@@ -270,9 +284,11 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
 
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(data_size >> 8),
+      static_cast<uint8_t>(data_size)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -292,8 +308,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
 
   // But at least one must match the data receive from the payload
   EXPECT_CALL(computer_com_mock,
-              Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
-                       sizeof(data_buffer), _))
+              Transmit(ArraysAreEqual(data_buffer, data_size), data_size, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   emulator.SetButtonPressed_TestOnly(true);
@@ -303,6 +318,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
   emulator.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    CorrectPacketNumberTest, EmulatorParameterizedTestFixture2,
-    ::testing::Values(1, 2, kMaxPayloadDataLength / kPacketLength));
+INSTANTIATE_TEST_CASE_P(CorrectPacketNumberTest,
+                        EmulatorParameterizedTestFixture2,
+                        ::testing::Values(1, 50, 250, 500, 600,
+                                          kMaxPayloadDataLength));
