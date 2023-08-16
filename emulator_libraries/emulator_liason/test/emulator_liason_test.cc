@@ -6,6 +6,7 @@
 
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
+#include "external_libraries/ArduinoJson-v6.21.3.h"
 
 using namespace ::testing;
 
@@ -94,9 +95,10 @@ class EmulatorLiasonTest : public testing::Test {
   EmulatorLiasonMockTesting emulator_liason =
       EmulatorLiasonMockTesting(emulator_com_mock, gpio_mock);
 
-  uint8_t kSyncByte = 5;
-  uint8_t kNumberOfBytesInHeader = 2;
-  uint16_t kPacketDataLength = 250;
+  constexpr static uint8_t kSyncByte = 5;
+  constexpr static uint8_t kNumberOfBytesInHeader = 2;
+  constexpr static uint16_t kPacketDataLength = 250;
+  constexpr static uint16_t kMaxDataLength = 1000;
 };
 
 TEST_F(EmulatorLiasonTest, SuccessWithStdArray) {
@@ -119,6 +121,49 @@ TEST_F(EmulatorLiasonTest, SuccessWithStdArray) {
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer.size());
+}
+
+TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
+  // create a JsonDocument
+  StaticJsonDocument<1000> doc;
+  // Add values in the document
+  doc["sensor"] = "Test";
+  doc["time"] = 0;
+  doc["memory_doc"] = doc.memoryUsage();
+  doc["memory_buffer"] = 0;
+  int extra_numbers = 10;
+  JsonArray data = doc.createNestedArray("data");
+  for (int i = 0; i < extra_numbers; i++) {
+    if (!data.add(doc.memoryUsage())) {
+      data[0] = i;
+      break;
+    }
+  }
+
+  // copy the data to the buffer
+  uint16_t kDataSize = static_cast<uint16_t>(measureJsonPretty(doc));
+  // Create a buffer to use to send
+  std::array<uint8_t, 1000> data_buffer;
+  serializeJsonPretty(doc, data_buffer.data(), kDataSize);
+
+  for (const auto& data : data_buffer) {
+    printf("%c", data);
+  }
+  printf("\n");
+
+  std::array<uint8_t, kMaxDataLength> buffer;
+
+  buffer[0] = kSyncByte;
+  buffer[1] = 1;
+  std::copy(data_buffer.begin(), data_buffer.begin() + kDataSize,
+            buffer.begin() + 2);
+
+  EXPECT_CALL(emulator_com_mock,
+              Transmit(ArraysAreEqual(buffer.data(), kDataSize + 2), _, _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
+  // When Payload Comunication is called
+  emulator_liason.Transmit(data_buffer.data(), kDataSize);
 }
 
 // -- --Parametised Tests-- --
