@@ -5,5 +5,6 @@ cc_library(
   hdrs = ["emulator_liason.h"],
   visibility = ["//visibility:public"], 
   deps = ["//abstraction_layer:serial_communication_interface", 
-          "//abstraction_layer:gpio_interface"],
+          "//abstraction_layer:gpio_interface",
+          "//emulator_definitions:emulator_definitions"],
 )

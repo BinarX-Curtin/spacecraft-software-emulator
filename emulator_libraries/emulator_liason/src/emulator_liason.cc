@@ -9,7 +9,11 @@
 
 #include <string.h>
 
+#include "emulator_definitions/emulator_definitions.h"
+
 namespace binarx::emulator_liason {
+
+using namespace emulator_definitions;
 
 void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   // make sure the pin is low
@@ -21,14 +25,14 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   constexpr uint8_t kNumBytesInHeader = 2;
 
   // Calculate number of packets
-  uint16_t num_packets = data_size / kPacketDataLength;
+  uint16_t num_packets = data_size / kPacketLength;
   // Add an extra packets if the data above has a reminder
-  if (data_size % kPacketDataLength != 0) {
+  if (data_size % kPacketLength != 0) {
     num_packets++;
   }
 
   // create a buffer with
-  uint16_t buffer_size = num_packets * kPacketDataLength + kNumBytesInHeader;
+  uint16_t buffer_size = num_packets * kPacketLength + kNumBytesInHeader;
   uint8_t buffer[buffer_size];
   buffer[0] = kSyncByte;
   buffer[1] = num_packets;

@@ -13,8 +13,6 @@
 
 namespace binarx::emulator_liason {
 
-/**> Packet Length*/
-constexpr uint16_t kPacketDataLength = 250;
 /**> The time to wait for a communication transaction in milliseconds*/
 constexpr uint32_t kDefaultCommunicationDelay = 10000;
 

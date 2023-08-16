@@ -11,7 +11,11 @@
 
 #include <array>
 
-namespace binarx_emulator {
+#include "emulator_definitions/emulator_definitions.h"
+
+namespace binarx::emulator {
+
+using namespace emulator_definitions;
 
 void BinarXEmulator::Run() {
   // Wait for button push
@@ -50,8 +54,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   // create the packet buffer
   std::array<uint8_t, kPacketLength> packet_buffer = {0};
 
-  // Receive number of packets
-  constexpr uint8_t kNumberOfBytesInHeader = 3;
+  // Receive the metadata
   binarx_serial_interface::SerialStatus serial_status =
       payload_communication_.Receive(packet_buffer.data(),
                                      kNumberOfBytesInHeader,
@@ -188,4 +191,4 @@ void BinarXEmulator::ErrorHandler() {
   }
 }
 
-}  // namespace binarx_emulator
+}  // namespace binarx::emulator

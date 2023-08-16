@@ -6,9 +6,12 @@
 
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
+#include "emulator_definitions/emulator_definitions.h"
 #include "external_libraries/ArduinoJson-v6.21.3.h"
 
 using namespace ::testing;
+
+using namespace binarx::emulator_definitions;
 
 class FakeSerialComunication
     : public binarx_serial_interface::SerialCommunicationInterface {
@@ -94,11 +97,6 @@ class EmulatorLiasonTest : public testing::Test {
 
   EmulatorLiasonMockTesting emulator_liason =
       EmulatorLiasonMockTesting(emulator_com_mock, gpio_mock);
-
-  constexpr static uint8_t kSyncByte = 5;
-  constexpr static uint8_t kNumberOfBytesInHeader = 2;
-  constexpr static uint16_t kPacketDataLength = 250;
-  constexpr static uint16_t kMaxDataLength = 1000;
 };
 
 TEST_F(EmulatorLiasonTest, SuccessWithStdArray) {
@@ -151,7 +149,7 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   }
   printf("\n");
 
-  std::array<uint8_t, kMaxDataLength> buffer;
+  std::array<uint8_t, kMaxPayloadDataLength> buffer;
 
   buffer[0] = kSyncByte;
   buffer[1] = 1;
@@ -177,8 +175,7 @@ TEST_P(EmulatorLiasonParameterizedTestFixture1,
   uint8_t expected_packet_num = GetParam();
 
   // Given a buffer with data to send to the emulator
-  uint16_t data_buffer_size =
-      binarx::emulator_liason::kPacketDataLength * expected_packet_num;
+  uint16_t data_buffer_size = kPacketLength * expected_packet_num;
   uint8_t data_buffer[data_buffer_size];
   for (uint16_t i = 0; i < data_buffer_size; i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
@@ -186,7 +183,7 @@ TEST_P(EmulatorLiasonParameterizedTestFixture1,
 
   // create a buffer with
   uint16_t buffer_size =
-      expected_packet_num * kPacketDataLength + kNumberOfBytesInHeader;
+      expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
   uint8_t buffer[buffer_size];
   buffer[0] = kSyncByte;
   buffer[1] = expected_packet_num;
@@ -226,9 +223,8 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
        Transmit_MultiplePacketTransferSuccess_DiferentDataSize) {
   uint16_t data_buffer_size = GetParam();
 
-  uint8_t expected_packet_num =
-      data_buffer_size / binarx::emulator_liason::kPacketDataLength;
-  if (data_buffer_size % binarx::emulator_liason::kPacketDataLength != 0) {
+  uint8_t expected_packet_num = data_buffer_size / kPacketLength;
+  if (data_buffer_size % kPacketLength != 0) {
     expected_packet_num++;
   }
 
@@ -240,7 +236,7 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
 
   // create a buffer with
   uint16_t buffer_size =
-      expected_packet_num * kPacketDataLength + kNumberOfBytesInHeader;
+      expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
 
   uint8_t buffer[buffer_size];
   buffer[0] = kSyncByte;
