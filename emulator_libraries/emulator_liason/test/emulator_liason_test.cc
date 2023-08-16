@@ -65,7 +65,7 @@ MATCHER_P2(ArraysAreEqual, array, size, "") {
     if (arg[i] != array[i]) {
       *result_listener << "the expected value is " << PrintToString(array[i])
                        << " and we got " << PrintToString(arg[i])
-                       << " for value in possition " << PrintToString(i);
+                       << " for value in index " << PrintToString(i);
       return false;
     }
   }
@@ -99,22 +99,31 @@ class EmulatorLiasonTest : public testing::Test {
       EmulatorLiasonMockTesting(emulator_com_mock, gpio_mock);
 };
 
-TEST_F(EmulatorLiasonTest, SuccessWithStdArray) {
-  constexpr uint16_t kDataSize = 252;
-  std::array<uint8_t, kDataSize> buffer = {0};
+template <size_t SIZE>
+void FillHeader(std::array<uint8_t, SIZE>& buffer, uint16_t data_size) {
+  buffer[0] = kSyncByte;
+  buffer[1] = static_cast<uint8_t>(data_size >> 8);
+  buffer[2] = static_cast<uint8_t>(data_size);
+}
+
+TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
+  constexpr uint16_t kDataSize = kPacketLength;
+  constexpr uint16_t kBufferSize = kPacketLength + kNumberOfBytesInHeader;
+  std::array<uint8_t, kBufferSize> buffer = {0};
   uint8_t count = 0;
   for (auto& item : buffer) {
     item = count++;
   }
 
-  buffer[0] = kSyncByte;
-  buffer[1] = 1;
+  FillHeader(buffer, kDataSize);
 
-  std::array<uint8_t, kDataSize - 2> data_buffer;
-  std::copy(buffer.begin() + 2, buffer.end(), data_buffer.begin());
+  std::array<uint8_t, kDataSize> data_buffer;
+  std::copy(buffer.begin() + kNumberOfBytesInHeader, buffer.end(),
+            data_buffer.begin());
 
-  EXPECT_CALL(emulator_com_mock,
-              Transmit(ArraysAreEqual(buffer.data(), kDataSize), kDataSize, _))
+  EXPECT_CALL(
+      emulator_com_mock,
+      Transmit(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
@@ -144,76 +153,22 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   std::array<uint8_t, 1000> data_buffer;
   serializeJsonPretty(doc, data_buffer.data(), kDataSize);
 
-  for (const auto& data : data_buffer) {
-    printf("%c", data);
-  }
-  printf("\n");
-
   std::array<uint8_t, kMaxPayloadDataLength> buffer;
 
-  buffer[0] = kSyncByte;
-  buffer[1] = 1;
+  FillHeader(buffer, kDataSize);
+
   std::copy(data_buffer.begin(), data_buffer.begin() + kDataSize,
-            buffer.begin() + 2);
+            buffer.begin() + kNumberOfBytesInHeader);
 
   EXPECT_CALL(emulator_com_mock,
-              Transmit(ArraysAreEqual(buffer.data(), kDataSize + 2), _, _))
+              Transmit(ArraysAreEqual(buffer.data(),
+                                      kDataSize + kNumberOfBytesInHeader),
+                       _, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), kDataSize);
 }
-
-// -- --Parametised Tests-- --
-
-class EmulatorLiasonParameterizedTestFixture1
-    : public EmulatorLiasonTest,
-      public ::testing::WithParamInterface<uint8_t> {};
-
-TEST_P(EmulatorLiasonParameterizedTestFixture1,
-       Transmit_MultiplePacketTransferSuccess_FullPackets) {
-  uint8_t expected_packet_num = GetParam();
-
-  // Given a buffer with data to send to the emulator
-  uint16_t data_buffer_size = kPacketLength * expected_packet_num;
-  uint8_t data_buffer[data_buffer_size];
-  for (uint16_t i = 0; i < data_buffer_size; i++) {
-    data_buffer[i] = static_cast<uint8_t>(i);
-  };
-
-  // create a buffer with
-  uint16_t buffer_size =
-      expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
-  uint8_t buffer[buffer_size];
-  buffer[0] = kSyncByte;
-  buffer[1] = expected_packet_num;
-
-  for (uint16_t i = 0; i < buffer_size; i++) {
-    buffer[i + 2] = data_buffer[i];
-  };
-
-  // transmit all this bytes
-  EXPECT_CALL(
-      emulator_com_mock,
-      Transmit(ArraysAreEqual(buffer, sizeof(buffer)), sizeof(buffer), _))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  // Expect for the GPIO line to be set high
-  EXPECT_CALL(gpio_mock,
-              SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady))
-      .Times(1);
-
-  EXPECT_CALL(gpio_mock,
-              SetLow(binarx_gpio_interface::GpioSelector::PayloadReady))
-      .Times(1);
-
-  // When Payload Comunication is called
-  emulator_liason.Transmit(data_buffer, data_buffer_size);
-}
-
-INSTANTIATE_TEST_CASE_P(SuccessPacketNumberTest,
-                        EmulatorLiasonParameterizedTestFixture1,
-                        ::testing::Values(1, 2, 6, 10));
 
 class EmulatorLiasonParameterizedTestFixture2
     : public EmulatorLiasonTest,
@@ -223,13 +178,18 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
        Transmit_MultiplePacketTransferSuccess_DiferentDataSize) {
   uint16_t data_buffer_size = GetParam();
 
+  if (data_buffer_size > kMaxPayloadDataLength) {
+    FAIL();
+  }
+
   uint8_t expected_packet_num = data_buffer_size / kPacketLength;
   if (data_buffer_size % kPacketLength != 0) {
     expected_packet_num++;
   }
 
   // Given a buffer with data to send to the emulator
-  uint8_t data_buffer[data_buffer_size];
+  std::array<uint8_t, kMaxPayloadDataLength> data_buffer;
+
   for (uint16_t i = 0; i < data_buffer_size; i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
@@ -238,13 +198,18 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
   uint16_t buffer_size =
       expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
 
-  uint8_t buffer[buffer_size];
-  buffer[0] = kSyncByte;
-  buffer[1] = expected_packet_num;
+  std::array<uint8_t, kMaxPayloadDataLength + kNumberOfBytesInHeader> buffer;
+  FillHeader(buffer, data_buffer_size);
 
   for (uint16_t i = 0; i < data_buffer_size; i++) {
-    buffer[i + 2] = data_buffer[i];
+    buffer[i + kNumberOfBytesInHeader] = data_buffer[i];
   };
+
+  // transmit all this bytes
+  EXPECT_CALL(
+      emulator_com_mock,
+      Transmit(ArraysAreEqual(buffer, data_buffer_size), buffer_size, _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // Expect for the GPIO line to be set high
   EXPECT_CALL(gpio_mock,
@@ -256,10 +221,12 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
       .Times(1);
 
   // When Payload Comunication is called
-  emulator_liason.Transmit(data_buffer, data_buffer_size);
+  emulator_liason.Transmit(data_buffer.data(), data_buffer_size);
 }
 
-INSTANTIATE_TEST_CASE_P(SuccessDataSizeTest,
-                        EmulatorLiasonParameterizedTestFixture2,
-                        ::testing::Values(1, 131, 250, 251, 500, 501, 600, 750,
-                                          751, 3000));
+INSTANTIATE_TEST_CASE_P(
+    SuccessDataSizeTest, EmulatorLiasonParameterizedTestFixture2,
+    ::testing::Values(1, 131, kPacketLength, kPacketLength + 1,
+                      2 * kPacketLength, 2 * kPacketLength + 1, 600,
+                      3 * kPacketLength, 2 * kPacketLength + 1,
+                      kMaxPayloadDataLength));

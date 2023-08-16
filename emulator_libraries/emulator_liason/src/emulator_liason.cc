@@ -19,11 +19,6 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   // make sure the pin is low
   gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::PayloadReady);
 
-  // The sync byte value to know that the payload transfered data succesfully
-  // and it was not random noice
-  constexpr uint8_t kSyncByte = 5;
-  constexpr uint8_t kNumBytesInHeader = 2;
-
   // Calculate number of packets
   uint16_t num_packets = data_size / kPacketLength;
   // Add an extra packets if the data above has a reminder
@@ -32,17 +27,19 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   }
 
   // create a buffer with
-  uint16_t buffer_size = num_packets * kPacketLength + kNumBytesInHeader;
-  uint8_t buffer[buffer_size];
+  uint16_t buffer_size = num_packets * kPacketLength + kNumberOfBytesInHeader;
+
+  std::array<uint8_t, kMaxPayloadDataLength + kNumberOfBytesInHeader> buffer;
   buffer[0] = kSyncByte;
-  buffer[1] = num_packets;
+  buffer[1] = static_cast<uint8_t>(data_size >> 8);
+  buffer[2] = static_cast<uint8_t>(data_size);
 
   for (uint16_t i = 0; i < data_size; i++) {
-    buffer[i + 2] = data[i];
+    buffer[i + kNumberOfBytesInHeader] = data[i];
   };
 
   // Send the data
-  emulator_communication_.Transmit(buffer, buffer_size,
+  emulator_communication_.Transmit(buffer.data(), buffer_size,
                                    kDefaultCommunicationDelay);
 
   gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady);
