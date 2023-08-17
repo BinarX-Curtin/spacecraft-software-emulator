@@ -72,7 +72,7 @@ binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
 binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
 binarx_serial_impl::UartImpl uart_controller = binarx_serial_impl::UartImpl();
 binarx_time_impl::TimeImpl time_controller = binarx_time_impl::TimeImpl();
-binarx_emulator::BinarXEmulator emulator = binarx_emulator::BinarXEmulator(
+binarx::emulator::BinarXEmulator emulator = binarx::emulator::BinarXEmulator(
     spi_controller, uart_controller, gpio_controller, time_controller);
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {

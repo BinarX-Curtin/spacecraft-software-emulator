@@ -13,8 +13,6 @@
 
 namespace binarx::emulator_liason {
 
-/**> Packet Length*/
-constexpr uint16_t kPacketDataLength = 250;
 /**> The time to wait for a communication transaction in milliseconds*/
 constexpr uint32_t kDefaultCommunicationDelay = 10000;
 
@@ -38,7 +36,7 @@ class EmulatorLiason {
         gpio_controller_(gpio_object),
         payload_status_(PayloadDataStatus::kPayloadReady){};
 
-  void Transmit(uint8_t* buffer, uint16_t size, uint32_t timeout);
+  void Transmit(uint8_t* buffer, uint16_t size);
 
  private:
   /**< Reference to the payload comunication implementation*/

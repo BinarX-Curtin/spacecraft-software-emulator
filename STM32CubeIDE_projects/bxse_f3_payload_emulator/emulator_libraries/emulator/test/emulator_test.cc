@@ -7,8 +7,11 @@
 #include "abstraction_layer/gpio_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 #include "abstraction_layer/time_interface.h"
+#include "emulator_definitions/emulator_definitions.h"
 
 using namespace ::testing;
+
+using namespace binarx::emulator_definitions;
 
 class FakeSerialComunication
     : public binarx_serial_interface::SerialCommunicationInterface {
@@ -72,7 +75,7 @@ MATCHER_P2(ArraysAreEqual, array, size,
   return true;
 }
 
-class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
+class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
  public:
   EmulatorMockTesting(binarx_serial_interface::SerialCommunicationInterface&
                           payload_communication,
@@ -80,16 +83,16 @@ class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
                           computer_communication,
                       binarx_gpio_interface::GpioInterface& gpio_object,
                       binarx_time_interface::TimeInterface& time_object)
-      : binarx_emulator::BinarXEmulator(payload_communication,
-                                        computer_communication, gpio_object,
-                                        time_object){};
+      : binarx::emulator::BinarXEmulator(payload_communication,
+                                         computer_communication, gpio_object,
+                                         time_object){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
   }
   void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
 
-  using binarx_emulator::BinarXEmulator::PayloadDataStatus;
+  using binarx::emulator::BinarXEmulator::PayloadDataStatus;
 };
 
 class EmulatorTest : public testing::Test {
@@ -102,24 +105,34 @@ class EmulatorTest : public testing::Test {
 
   EmulatorMockTesting emulator = EmulatorMockTesting(
       payload_com_mock, computer_com_mock, gpio_mock, time_mock);
-
-  uint8_t kSyncByte = 5;
-  uint8_t kSizeOfMetadataPacket = 2;
 };
+
+uint16_t CalculateNumberOfPackets(uint16_t data_size) {
+  // Calculate number of packets
+  uint16_t num_packets = data_size / kPacketLength;
+  // Add an extra packets if the data above has a reminder
+  if (data_size % kPacketLength != 0) {
+    num_packets++;
+  }
+  return num_packets;
+}
 
 TEST_F(EmulatorTest, Run_DataTransferSuccess) {
   // Given a buffer with data that is sent succesfully from the payload
   uint8_t kNumOfPaquets = 1;
-  uint8_t data_buffer[kNumOfPaquets * binarx_emulator::kPacketLength];
+  uint8_t kDataSize = kNumOfPaquets * kPacketLength;
+  uint8_t data_buffer[kDataSize];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(kDataSize >> 8),
+      static_cast<uint8_t>(kDataSize)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -127,10 +140,9 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
 
   // Then the data received by the emulator from the payload should be equal to
   // the data sent to by the emulator to the Users Computer
-  EXPECT_CALL(payload_com_mock, Receive(_, binarx_emulator::kPacketLength, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kPacketLength, _))
       .WillOnce(
-          DoAll(SetArrayArgument<0>(
-                    data_buffer, data_buffer + binarx_emulator::kPacketLength),
+          DoAll(SetArrayArgument<0>(data_buffer, data_buffer + kPacketLength),
                 Return(binarx_serial_interface::SerialStatus::Success)));
 
   // There can be any number of transmisions to the computer.
@@ -151,15 +163,15 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
   emulator.Run();
 }
 
-TEST_F(EmulatorTest, Run_IsRedLedOn) {
+TEST_F(EmulatorTest, Run_IsGreenLedOn) {
   EXPECT_CALL(gpio_mock, SetHigh(_)).Times(AnyNumber());
   // Has the Red Led turn on when the emulator starts running
-  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::RedLed))
+  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   EXPECT_CALL(gpio_mock, SetLow(_)).Times(AnyNumber());
   // And is it turned off
-  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::RedLed))
+  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed))
       .Times(1);
 
   emulator.SetButtonPressed_TestOnly(true);
@@ -171,7 +183,7 @@ TEST_F(EmulatorTest, Run_IsRedLedOn) {
 
 TEST_F(EmulatorTest, PayloadReturnsError) {
   // Given a buffer with data
-  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+  uint8_t data_buffer[kMaxPayloadDataLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
     data_buffer[i] = static_cast<char>(i);
   };
@@ -185,8 +197,7 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
   // There can be any number of transmisions to the computer and no transmission
   // should be equal to the data buffer received from the payload as it returned
   // timeout
-  EXPECT_CALL(computer_com_mock,
-              Transmit(_, Not(binarx_emulator::kPacketLength), _))
+  EXPECT_CALL(computer_com_mock, Transmit(_, Not(kPacketLength), _))
       .Times(3)
       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
@@ -200,8 +211,8 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
 TEST_F(EmulatorTest, EmulatorTimeout) {
   uint32_t now = 0;
   uint32_t emulator_before_timeout =
-      binarx_emulator::kWaitForPayloadMaxTime - 1;
-  uint32_t emulator_timeout = binarx_emulator::kWaitForPayloadMaxTime + 1;
+      binarx::emulator::kWaitForPayloadMaxTime - 1;
+  uint32_t emulator_timeout = binarx::emulator::kWaitForPayloadMaxTime + 1;
 
   EXPECT_CALL(time_mock, GetTicks())
       .Times(3)
@@ -218,16 +229,19 @@ TEST_F(EmulatorTest, EmulatorTimeout) {
 
 class EmulatorParameterizedTestFixture1
     : public EmulatorTest,
-      public ::testing::WithParamInterface<uint8_t> {};
+      public ::testing::WithParamInterface<uint16_t> {};
 
-TEST_P(EmulatorParameterizedTestFixture1, PacketNumError) {
-  // Given an erroneus packet number
-  uint8_t kNumOfPaquets = GetParam();
+TEST_P(EmulatorParameterizedTestFixture1, DataSizeError) {
+  // Given an erroneus data size number
+  uint16_t data_size = GetParam();
+  uint16_t kNumOfPaquets = CalculateNumberOfPackets(data_size);
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(data_size >> 8),
+      static_cast<uint8_t>(data_size)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -235,8 +249,7 @@ TEST_P(EmulatorParameterizedTestFixture1, PacketNumError) {
 
   // There can be three computer communications but non should be of packet
   // length.
-  EXPECT_CALL(computer_com_mock,
-              Transmit(_, Not(binarx_emulator::kPacketLength), _))
+  EXPECT_CALL(computer_com_mock, Transmit(_, Not(kPacketLength), _))
       .Times(3)
       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Success));
 
@@ -247,34 +260,35 @@ TEST_P(EmulatorParameterizedTestFixture1, PacketNumError) {
   emulator.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    ErroneousPacketNumberTest, EmulatorParameterizedTestFixture1,
-    ::testing::Values(0, binarx_emulator::kMaxPayloadDataLength /
-                                 binarx_emulator::kPacketLength +
-                             1));
+INSTANTIATE_TEST_CASE_P(ErroneousDataSizeTest,
+                        EmulatorParameterizedTestFixture1,
+                        ::testing::Values(0, kMaxPayloadDataLength + 1));
 
 class EmulatorParameterizedTestFixture2
     : public EmulatorTest,
-      public ::testing::WithParamInterface<uint8_t> {};
+      public ::testing::WithParamInterface<uint16_t> {};
 
 TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
   // Given a buffer with data that is sent succesfully from the payload
-  uint8_t kNumOfPaquets = GetParam();
-  uint8_t packet_buffer[binarx_emulator::kPacketLength];
+  uint16_t data_size = GetParam();
+  uint16_t kNumOfPaquets = CalculateNumberOfPackets(data_size);
+  uint8_t packet_buffer[kPacketLength];
   for (uint16_t i = 0; i < sizeof(packet_buffer); i++) {
     packet_buffer[i] = static_cast<uint8_t>(i);
   };
 
-  uint8_t data_buffer[kNumOfPaquets * binarx_emulator::kPacketLength];
+  uint8_t data_buffer[kNumOfPaquets * kPacketLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
-    data_buffer[i] = packet_buffer[i % binarx_emulator::kPacketLength];
+    data_buffer[i] = packet_buffer[i % kPacketLength];
   }
 
   // The emulator should receive the number of packets to the payload has to
   // send
-  uint8_t metadata_packet[kSizeOfMetadataPacket] = {kSyncByte, kNumOfPaquets};
+  uint8_t metadata_packet[kNumberOfBytesInHeader] = {
+      kSyncByte, static_cast<uint8_t>(data_size >> 8),
+      static_cast<uint8_t>(data_size)};
 
-  EXPECT_CALL(payload_com_mock, Receive(_, kSizeOfMetadataPacket, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kNumberOfBytesInHeader, _))
       .WillOnce(
           DoAll(SetArrayArgument<0>(metadata_packet,
                                     metadata_packet + sizeof(metadata_packet)),
@@ -282,10 +296,9 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
 
   // Then the data received by the emulator from the payload should be equal to
   // the data sent to by the emulator to the Users Computer
-  EXPECT_CALL(payload_com_mock, Receive(_, binarx_emulator::kPacketLength, _))
+  EXPECT_CALL(payload_com_mock, Receive(_, kPacketLength, _))
       .WillRepeatedly(DoAll(
-          SetArrayArgument<0>(packet_buffer,
-                              packet_buffer + binarx_emulator::kPacketLength),
+          SetArrayArgument<0>(packet_buffer, packet_buffer + kPacketLength),
           Return(binarx_serial_interface::SerialStatus::Success)));
 
   // There can be any number of transmisions to the computer.
@@ -295,8 +308,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
 
   // But at least one must match the data receive from the payload
   EXPECT_CALL(computer_com_mock,
-              Transmit(ArraysAreEqual(data_buffer, sizeof(data_buffer)),
-                       sizeof(data_buffer), _))
+              Transmit(ArraysAreEqual(data_buffer, data_size), data_size, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   emulator.SetButtonPressed_TestOnly(true);
@@ -306,8 +318,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
   emulator.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(
-    CorrectPacketNumberTest, EmulatorParameterizedTestFixture2,
-    ::testing::Values(1, 2,
-                      binarx_emulator::kMaxPayloadDataLength /
-                          binarx_emulator::kPacketLength));
+INSTANTIATE_TEST_CASE_P(CorrectPacketNumberTest,
+                        EmulatorParameterizedTestFixture2,
+                        ::testing::Values(1, 50, 250, 500, 600,
+                                          kMaxPayloadDataLength));

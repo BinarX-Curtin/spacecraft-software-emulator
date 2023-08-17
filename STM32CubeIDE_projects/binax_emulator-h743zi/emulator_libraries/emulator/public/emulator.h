@@ -12,19 +12,14 @@
 #include "abstraction_layer/serial_communication_interface.h"
 #include "abstraction_layer/time_interface.h"
 
-namespace binarx_emulator {
+namespace binarx::emulator {
 
-/**> Max payload data size allowed */
-constexpr uint16_t kMaxPayloadDataLength = 1000;
 /**> The time the Payload is allowed to be on for in milliseconds*/
 constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 /**> The time to wait for a communication transaction*/
 constexpr uint32_t kDefaultCommunicationDelay = kWaitForPayloadMaxTime;
-/**> Packet Length*/
-constexpr uint16_t kPacketLength = 250;
-/**> Synck byte value used to determine if The SPI transmision failed*/
-constexpr uint8_t kSyncByte = 5;
-
+/**> The number of attemps that the emulator can request the Payload Metadata
+ * without success*/
 constexpr uint8_t kAllolwedMetadataAttempts = 5;
 
 /**
@@ -133,7 +128,7 @@ class BinarXEmulator {
     kWaitingForPayload,
     kPayloadReady,
     kErrorWithMetadataPacket,
-    kErrorTooManyPackets,
+    kErrorDataSize,
     kFaiulureToReceiveAllPackets,
     kDataReceivedSuccesfully,
     kTrasferCompleted,
@@ -160,4 +155,4 @@ class BinarXEmulator {
   uint8_t attempt_counter_;
 };
 
-}  // namespace binarx_emulator
+}  // namespace binarx::emulator

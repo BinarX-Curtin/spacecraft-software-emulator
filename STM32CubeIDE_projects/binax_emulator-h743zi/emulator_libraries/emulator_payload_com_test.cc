@@ -86,7 +86,7 @@ MATCHER_P2(ArraysAreEqual, array, size,
   return true;
 }
 
-class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
+class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
  public:
   EmulatorMockTesting(binarx_serial_interface::SerialCommunicationInterface&
                           payload_communication,
@@ -94,7 +94,7 @@ class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
                           computer_communication,
                       binarx_gpio_interface::GpioInterface& gpio_object,
                       binarx_time_interface::TimeInterface& time_object)
-      : binarx_emulator::BinarXEmulator(payload_communication,
+      : binarx::emulator::BinarXEmulator(payload_communication,
                                         computer_communication, gpio_object,
                                         time_object){};
 
@@ -103,7 +103,7 @@ class EmulatorMockTesting : public binarx_emulator::BinarXEmulator {
   }
   void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
 
-  using binarx_emulator::BinarXEmulator::PayloadDataStatus;
+  using binarx::emulator::BinarXEmulator::PayloadDataStatus;
 };
 
 class EmulatorLiasonMockTesting
@@ -146,7 +146,7 @@ class EmulatorPayloadComTest : public testing::Test {
 
 TEST_F(EmulatorPayloadComTest, PayloadToEmulator_PacketTransferSuccess) {
   // if we create data to send from the payload
-  uint8_t data_buffer[binarx_emulator::kMaxPayloadDataLength];
+  uint8_t data_buffer[binarx::emulator::kMaxPayloadDataLength];
   for (uint16_t i = 0; i < sizeof(data_buffer) - sizeof(data_buffer) + 1; i++) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };

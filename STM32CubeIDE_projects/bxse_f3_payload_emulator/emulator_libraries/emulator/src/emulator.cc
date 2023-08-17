@@ -9,7 +9,23 @@
 
 #include <string.h>
 
-namespace binarx_emulator {
+#include <array>
+
+#include "emulator_definitions/emulator_definitions.h"
+
+namespace binarx::emulator {
+
+using namespace emulator_definitions;
+
+uint16_t CalculateNumberOfPackets(uint16_t data_size) {
+  // Calculate number of packets
+  uint16_t num_packets = data_size / kPacketLength;
+  // Add an extra packets if the data above has a reminder
+  if (data_size % kPacketLength != 0) {
+    num_packets++;
+  }
+  return num_packets;
+}
 
 void BinarXEmulator::Run() {
   // Wait for button push
@@ -43,15 +59,15 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   // Turn on the Green LED to inform that the payload ready interrupt was
   // received
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::GreenLed);
+  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
 
   // create the packet buffer
-  uint8_t packet_buffer[kPacketLength] = {0};
+  std::array<uint8_t, kPacketLength> packet_buffer = {0};
 
-  // Receive number of packets
-  constexpr uint8_t kNumberOfBytesInHeader = 2;
+  // Receive the metadata
   binarx_serial_interface::SerialStatus serial_status =
-      payload_communication_.Receive(packet_buffer, kNumberOfBytesInHeader,
+      payload_communication_.Receive(packet_buffer.data(),
+                                     kNumberOfBytesInHeader,
                                      kDefaultCommunicationDelay);
   // check if the header was received correctly and extract the number of
   // packets
@@ -74,36 +90,34 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   attempt_counter_ = 0;
 
   if (payload_status_ == PayloadDataStatus::kPayloadReady) {
-    uint8_t num_of_packets = packet_buffer[1];
-    uint16_t kDataSize = num_of_packets * kPacketLength;
-    if (kDataSize > kMaxPayloadDataLength || num_of_packets == 0) {
+    const uint16_t kDataSize =
+        ((uint16_t)packet_buffer[1] << 8) | packet_buffer[2];
+    uint16_t num_of_packets = CalculateNumberOfPackets(kDataSize);
+    if (kDataSize > kMaxPayloadDataLength || kDataSize == 0) {
       // Error
-      payload_status_ = PayloadDataStatus::kErrorTooManyPackets;
+      payload_status_ = PayloadDataStatus::kErrorDataSize;
     } else {
-      uint8_t data_buffer[kDataSize];
+      std::array<uint8_t, kMaxPayloadDataLength> data_buffer = {0};
       for (uint8_t i = 0; i < num_of_packets; i++) {
         serial_status = payload_communication_.Receive(
-            packet_buffer, kPacketLength, kDefaultCommunicationDelay);
+            packet_buffer.data(), kPacketLength, kDefaultCommunicationDelay);
         // Break if any of the transactions fail
         if (serial_status != binarx_serial_interface::SerialStatus::Success) {
+          payload_status_ = PayloadDataStatus::kFaiulureToReceiveAllPackets;
           break;
         }
         uint16_t location_start_for_packet = i * kPacketLength;
         // copy data from packet buffer to data buffer
-        // change this to use spans when we move to c++20
-        for (uint16_t j = 0; j < kPacketLength; j++) {
-          data_buffer[location_start_for_packet + j] = packet_buffer[j];
-        }
+        std::copy(packet_buffer.begin(), packet_buffer.end(),
+                  data_buffer.begin() + location_start_for_packet);
       }
 
       // Check the status of the SPI transaction
-      if (serial_status == binarx_serial_interface::SerialStatus::Success) {
+      if (payload_status_ == PayloadDataStatus::kPayloadReady) {
         // Send the data over UART if SPI data was received succesfully
-        computer_communication_.Transmit(data_buffer, sizeof(data_buffer),
+        computer_communication_.Transmit(data_buffer.data(), kDataSize,
                                          kDefaultCommunicationDelay);
         payload_status_ = PayloadDataStatus::kDataReceivedSuccesfully;
-      } else {
-        payload_status_ = PayloadDataStatus::kFaiulureToReceiveAllPackets;
       }
     }
   }
@@ -117,7 +131,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   payload_status_ = PayloadDataStatus::kTrasferCompleted;
 
   // Turn off Green LED
-  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
+  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::RedLed);
 }
 
 void BinarXEmulator::Init() {
@@ -134,7 +148,7 @@ void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
 
 void BinarXEmulator::RunStartInfo() {
   // turn on red LED
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
+  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::GreenLed);
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
       "\r\nINFO: Button pressed and waiting for SPI transmission \r\n";
@@ -144,12 +158,12 @@ void BinarXEmulator::RunStartInfo() {
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "\r\nINFO: Turning emulator off\r\n";
+  uint8_t info_msg[] = "\r\nINFO: Turning payload off\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 
   // turn on red LED
-  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::RedLed);
+  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
 }
 
 void BinarXEmulator::ErrorHandler() {
@@ -171,7 +185,7 @@ void BinarXEmulator::ErrorHandler() {
                                        strlen(metadata_error_msg),
                                        kDefaultCommunicationDelay);
       break;
-    case PayloadDataStatus::kErrorTooManyPackets:
+    case PayloadDataStatus::kErrorDataSize:
       computer_communication_.Transmit((uint8_t *)too_many_packets_error_msg,
                                        strlen(too_many_packets_error_msg),
                                        kDefaultCommunicationDelay);
@@ -188,4 +202,4 @@ void BinarXEmulator::ErrorHandler() {
   }
 }
 
-}  // namespace binarx_emulator
+}  // namespace binarx::emulator

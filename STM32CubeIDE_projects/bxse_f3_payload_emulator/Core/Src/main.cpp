@@ -127,30 +127,27 @@ int main(void) {
   doc["sensor"] = "Test";
   doc["time"] = 0;
   doc["memory_doc"] = doc.memoryUsage();
-  doc["memory_buffer"] =0;
+  doc["memory_buffer"] = 0;
 
   //
   //
-  int extra_numbers = 170;
+  int extra_numbers = 10;
 
   JsonArray data = doc.createNestedArray("data");
   for (int i = 0; i < extra_numbers; i++) {
-    if(!data.add(doc.memoryUsage())){
-    	data[0] = i;
-    	break;
+    if (!data.add(doc.memoryUsage())) {
+      data[0] = i;
+      break;
     }
   }
   //
-  //  waiting_for_transmision = true;
+  uint8_t buffer[500];
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // Make sure the GPIO is set to low
-    HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
-
     // Wait for the Emulator to be ready.
     if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
       // Test different delays to make sure the emulator can handle it
@@ -159,20 +156,21 @@ int main(void) {
       doc["memory_doc"] = doc.memoryUsage();
       HAL_Delay(random_number);
 
-      // Data size as defined by emulator largest packet size (+ 1 to add the null terminator byte)
-      int kDataSize = measureJson(doc) + 1;
+      // Data size as defined by emulator largest packet size (+ 1 to add the
+      // null terminator byte)
+      uint16_t kDataSize = static_cast<uint16_t>(measureJsonPretty(doc) + 1);
       // Create a buffer where you will store the data
-      uint8_t buffer[kDataSize];
+
 
       doc["memory_buffer"] = kDataSize;
 
-      serializeJson(doc, (char *)buffer, (uint16_t) kDataSize);
+      serializeJsonPretty(doc, (char *)buffer, kDataSize);
 
       // To transmit the data we need to call this function
       //	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1,
       // buffer, kDataSize);
 
-      emulator_liason.Transmit(buffer, doc.memoryUsage(), 1000);
+      emulator_liason.Transmit(buffer, kDataSize);
       HAL_Delay(10);
     }
 
