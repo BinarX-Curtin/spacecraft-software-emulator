@@ -33,7 +33,8 @@ binarx_serial_interface::SerialStatus SerialErrorHandler(
 binarx_serial_interface::SerialStatus SpiImpl::Transmit(uint8_t *buffer,
                                                         uint16_t size,
                                                         uint32_t timeout) {
-  HAL_StatusTypeDef hal_status = HAL_SPI_Transmit_IT(&hspi1, buffer, size);
+  HAL_StatusTypeDef hal_status =
+      HAL_SPI_Transmit(&hspi1, buffer, size, timeout);
   return SerialErrorHandler(hal_status);
 };
 binarx_serial_interface::SerialStatus SpiImpl::Receive(uint8_t *receive_buffer,
@@ -41,6 +42,11 @@ binarx_serial_interface::SerialStatus SpiImpl::Receive(uint8_t *receive_buffer,
                                                        uint32_t timeout) {
   HAL_StatusTypeDef hal_status =
       HAL_SPI_Receive(&hspi1, receive_buffer, size, timeout);
+  return SerialErrorHandler(hal_status);
+};
+binarx_serial_interface::SerialStatus SpiImpl::TransmitIt(uint8_t *buffer,
+                                                          uint16_t size) {
+  HAL_StatusTypeDef hal_status = HAL_SPI_Transmit_IT(&hspi1, buffer, size);
   return SerialErrorHandler(hal_status);
 };
 
@@ -56,6 +62,12 @@ binarx_serial_interface::SerialStatus UartImpl::Receive(uint8_t *receive_buffer,
                                                         uint32_t timeout) {
   HAL_StatusTypeDef hal_status =
       HAL_UART_Receive(&huart2, receive_buffer, size, timeout);
+  return SerialErrorHandler(hal_status);
+};
+
+binarx_serial_interface::SerialStatus UartImpl::TransmitIt(uint8_t *buffer,
+                                                           uint16_t size) {
+  HAL_StatusTypeDef hal_status = HAL_UART_Transmit_IT(&huart2, buffer, size);
   return SerialErrorHandler(hal_status);
 };
 

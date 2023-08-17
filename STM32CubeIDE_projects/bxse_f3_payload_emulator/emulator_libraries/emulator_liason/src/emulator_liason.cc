@@ -39,8 +39,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   };
 
   // Send the data
-  emulator_communication_.Transmit(buffer.data(), buffer_size,
-                                   kDefaultCommunicationDelay);
+  emulator_communication_.TransmitIt(buffer.data(), buffer_size);
 
   gpo_payload_ready_.SetHigh();
 }

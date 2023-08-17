@@ -51,5 +51,14 @@ class SerialCommunicationInterface {
    */
   virtual SerialStatus Receive(uint8_t *receive_buffer, uint16_t size,
                                uint32_t timeout) = 0;
+
+  /**
+   * @brief Transmit the data through serial using an interrupt callback
+   *
+   * @param buffer A pointer to the start of the buffer
+   * @param size the size of the data
+   * @return SerialStatus The status of the transaction
+   */
+  virtual SerialStatus TransmitIt(uint8_t *buffer, uint16_t size) = 0;
 };
 }  // namespace binarx_serial_interface

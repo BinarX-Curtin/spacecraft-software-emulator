@@ -13,9 +13,6 @@
 
 namespace binarx::emulator_liason {
 
-/**> The time to wait for a communication transaction in milliseconds*/
-constexpr uint32_t kDefaultCommunicationDelay = 10000;
-
 /**
  * @brief Binar X Emulator to implement the Emulator functions
  *

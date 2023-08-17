@@ -19,6 +19,8 @@ class SpiImpl : public binarx_serial_interface::SerialCommunicationInterface {
   binarx_serial_interface::SerialStatus Receive(uint8_t *receive_buffer,
                                                 uint16_t size,
                                                 uint32_t timeout);
+  binarx_serial_interface::SerialStatus TransmitIt(uint8_t *buffer,
+                                                   uint16_t size);
 };
 
 class UartImpl : public binarx_serial_interface::SerialCommunicationInterface {
@@ -29,6 +31,7 @@ class UartImpl : public binarx_serial_interface::SerialCommunicationInterface {
   binarx_serial_interface::SerialStatus Receive(uint8_t *receive_buffer,
                                                 uint16_t size,
                                                 uint32_t timeout);
+  binarx_serial_interface::SerialStatus TransmitIt(uint8_t *buffer,
+                                                   uint16_t size);
 };
-
 }  // namespace binarx_serial_impl

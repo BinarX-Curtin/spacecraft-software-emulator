@@ -12,24 +12,6 @@
 using namespace ::testing;
 using namespace binarx::emulator_definitions;
 
-class FakeSerialComunication
-    : public binarx_serial_interface::SerialCommunicationInterface {
- public:
-  binarx_serial_interface::SerialStatus Receive(uint8_t* receive_buffer,
-                                                uint16_t size,
-                                                uint32_t timeout) override {
-    for (uint16_t i = 0; i < size; i++) {
-      receive_buffer[i] = uint8_t(static_cast<uint8_t>(i));
-    };
-    return binarx_serial_interface::SerialStatus::Success;
-  };
-  binarx_serial_interface::SerialStatus Transmit(uint8_t* transmit_buffer,
-                                                 uint16_t size,
-                                                 uint32_t timeout) override {
-    return binarx_serial_interface::SerialStatus::Success;
-  };
-};
-
 class SerialCommunicationMock
     : public binarx_serial_interface::SerialCommunicationInterface {
  public:
@@ -38,17 +20,8 @@ class SerialCommunicationMock
   MOCK_METHOD(binarx_serial_interface::SerialStatus, Receive,
               (uint8_t * receive_buffer, uint16_t size, uint32_t timeout),
               (override));
-
-  void DelegateToSuccessfulFake() {
-    ON_CALL(*this, Receive)
-        .WillByDefault(
-            [this](uint8_t* buffer, uint16_t size, uint32_t timeout) {
-              return fake_.Receive(buffer, size, timeout);
-            });
-  }
-
- private:
-  FakeSerialComunication fake_;
+  MOCK_METHOD(binarx_serial_interface::SerialStatus, TransmitIt,
+              (uint8_t * buffer, uint16_t size), (override));
 };
 
 class GpoMock : public bsf::hal::gpio::GpoInterface {
@@ -121,7 +94,7 @@ TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
 
   EXPECT_CALL(
       emulator_com_mock,
-      Transmit(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize, _))
+      TransmitIt(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
@@ -158,10 +131,10 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   std::copy(data_buffer.begin(), data_buffer.begin() + kDataSize,
             buffer.begin() + kNumberOfBytesInHeader);
 
-  EXPECT_CALL(emulator_com_mock,
-              Transmit(ArraysAreEqual(buffer.data(),
-                                      kDataSize + kNumberOfBytesInHeader),
-                       _, _))
+  EXPECT_CALL(
+      emulator_com_mock,
+      TransmitIt(
+          ArraysAreEqual(buffer.data(), kDataSize + kNumberOfBytesInHeader), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
@@ -204,9 +177,8 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
   };
 
   // transmit all this bytes
-  EXPECT_CALL(
-      emulator_com_mock,
-      Transmit(ArraysAreEqual(buffer, data_buffer_size), buffer_size, _))
+  EXPECT_CALL(emulator_com_mock,
+              TransmitIt(ArraysAreEqual(buffer, data_buffer_size), buffer_size))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // Expect for the GPIO line to be set high
