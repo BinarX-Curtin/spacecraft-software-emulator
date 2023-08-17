@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 
-#include "abstraction_layer/gpio_interface.h"
+#include "abstraction_layer/gpio/public/gpo_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 #include "abstraction_layer/time_interface.h"
 #include "emulator_definitions/emulator_definitions.h"
@@ -52,12 +52,11 @@ class SerialCommunicationMock
   FakeSerialComunication fake_;
 };
 
-class GpioMock : public binarx_gpio_interface::GpioInterface {
+class GpoMock : public bsf::hal::gpio::GpoInterface {
  public:
-  MOCK_METHOD(void, SetHigh, (binarx_gpio_interface::GpioSelector), (override));
-  MOCK_METHOD(void, SetLow, (binarx_gpio_interface::GpioSelector), (override));
-  MOCK_METHOD(void, TogglePin, (binarx_gpio_interface::GpioSelector),
-              (override));
+  MOCK_METHOD(void, SetHigh, (), (override));
+  MOCK_METHOD(void, SetLow, (), (override));
+  MOCK_METHOD(void, Toggle, (), (override));
 };
 class TimeMock : public binarx_time_interface::TimeInterface {
  public:
@@ -81,11 +80,13 @@ class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
                           payload_communication,
                       binarx_serial_interface::SerialCommunicationInterface&
                           computer_communication,
-                      binarx_gpio_interface::GpioInterface& gpio_object,
+                      bsf::hal::gpio::GpoInterface& gpo_red_led,
+                      bsf::hal::gpio::GpoInterface& gpo_yellow_led,
+                      bsf::hal::gpio::GpoInterface& gpo_green_led,
                       binarx_time_interface::TimeInterface& time_object)
-      : binarx::emulator::BinarXEmulator(payload_communication,
-                                         computer_communication, gpio_object,
-                                         time_object){};
+      : binarx::emulator::BinarXEmulator(
+            payload_communication, computer_communication, gpo_red_led,
+            gpo_yellow_led, gpo_green_led, time_object){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
@@ -100,11 +101,14 @@ class EmulatorTest : public testing::Test {
   // void SetUp() override{};
   NiceMock<SerialCommunicationMock> payload_com_mock;
   NiceMock<SerialCommunicationMock> computer_com_mock;
-  NiceMock<GpioMock> gpio_mock;
+  NiceMock<GpoMock> gpo_red_led_mock;
+  NiceMock<GpoMock> gpo_yellow_led_mock;
+  NiceMock<GpoMock> gpo_green_led_mock;
   NiceMock<TimeMock> time_mock;
 
-  EmulatorMockTesting emulator = EmulatorMockTesting(
-      payload_com_mock, computer_com_mock, gpio_mock, time_mock);
+  EmulatorMockTesting emulator =
+      EmulatorMockTesting(payload_com_mock, computer_com_mock, gpo_red_led_mock,
+                          gpo_yellow_led_mock, gpo_green_led_mock, time_mock);
 };
 
 uint16_t CalculateNumberOfPackets(uint16_t data_size) {
@@ -164,15 +168,10 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
 }
 
 TEST_F(EmulatorTest, Run_IsGreenLedOn) {
-  EXPECT_CALL(gpio_mock, SetHigh(_)).Times(AnyNumber());
   // Has the Red Led turn on when the emulator starts running
-  EXPECT_CALL(gpio_mock, SetHigh(binarx_gpio_interface::GpioSelector::GreenLed))
-      .Times(1);
-
-  EXPECT_CALL(gpio_mock, SetLow(_)).Times(AnyNumber());
+  EXPECT_CALL(gpo_green_led_mock, SetHigh()).Times(1);
   // And is it turned off
-  EXPECT_CALL(gpio_mock, SetLow(binarx_gpio_interface::GpioSelector::GreenLed))
-      .Times(1);
+  EXPECT_CALL(gpo_green_led_mock, SetLow()).Times(1);
 
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
@@ -189,8 +188,8 @@ TEST_F(EmulatorTest, PayloadReturnsError) {
   };
 
   // when data is copied to the received data buffer from the payload, but
-  // the function returns an Error. then the buffer will not be transmited as
-  // an error message gets sent
+  // the function returns an Error. then the buffer will not be transmited,
+  // instead an error message gets sent
   EXPECT_CALL(payload_com_mock, Receive(_, _, _))
       .WillRepeatedly(Return(binarx_serial_interface::SerialStatus::Error));
 

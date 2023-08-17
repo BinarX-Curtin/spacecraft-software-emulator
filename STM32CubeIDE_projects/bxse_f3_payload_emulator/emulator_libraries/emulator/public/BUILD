@@ -5,7 +5,7 @@ cc_library(
   hdrs = ["emulator.h"],
   visibility = ["//visibility:public"], 
   deps = ["//abstraction_layer:serial_communication_interface", 
-          "//abstraction_layer:gpio_interface",
+          "//abstraction_layer/gpio/public:gpo_interface",
           "//abstraction_layer:time_interface",
           "//emulator_definitions:emulator_definitions"],
 )

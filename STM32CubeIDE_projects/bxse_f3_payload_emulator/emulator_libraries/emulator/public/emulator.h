@@ -8,7 +8,7 @@
 #pragma once
 #include <stdint.h>
 
-#include "abstraction_layer/gpio_interface.h"
+#include "abstraction_layer/gpio/public/gpo_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 #include "abstraction_layer/time_interface.h"
 
@@ -39,11 +39,15 @@ class BinarXEmulator {
                      payload_communication,
                  binarx_serial_interface::SerialCommunicationInterface&
                      computer_communication,
-                 binarx_gpio_interface::GpioInterface& gpio_object,
+                 bsf::hal::gpio::GpoInterface& gpo_red_led,
+                 bsf::hal::gpio::GpoInterface& gpo_yellow_led,
+                 bsf::hal::gpio::GpoInterface& gpo_green_led,
                  binarx_time_interface::TimeInterface& time_object)
       : payload_communication_(payload_communication),
         computer_communication_(computer_communication),
-        gpio_controller_(gpio_object),
+        gpo_red_led_(gpo_red_led),
+        gpo_yellow_led_(gpo_yellow_led),
+        gpo_green_led_(gpo_green_led),
         time_controller_(time_object),
         button_pressed_(false),
         payload_status_(PayloadDataStatus::kWaitingForPayload),
@@ -83,8 +87,12 @@ class BinarXEmulator {
   /**< Reference to the computer comunication implementation*/
   binarx_serial_interface::SerialCommunicationInterface&
       computer_communication_;
-  /**< Reference to the GPIO implementation*/
-  binarx_gpio_interface::GpioInterface& gpio_controller_;
+  /**< Reference to the red Led GPO implementation*/
+  bsf::hal::gpio::GpoInterface& gpo_red_led_;
+  /**< Reference to the yellow Led GPO implementation*/
+  bsf::hal::gpio::GpoInterface& gpo_yellow_led_;
+  /**< Reference to the green Led GPO implementation*/
+  bsf::hal::gpio::GpoInterface& gpo_green_led_;
   /**< Reference to the time related implementation*/
   binarx_time_interface::TimeInterface& time_controller_;
 

@@ -6,8 +6,6 @@
  */
 
 #include "abstraction_layer/serial_communication_interface.h"
-extern SPI_HandleTypeDef hspi1;
-extern UART_HandleTypeDef huart3;
 
 #pragma once
 
@@ -33,6 +31,4 @@ class UartImpl : public binarx_serial_interface::SerialCommunicationInterface {
                                                 uint32_t timeout);
 };
 
-binarx_serial_interface::SerialStatus SerialErrorHandler(
-    HAL_StatusTypeDef hal_status);
 }  // namespace binarx_serial_impl

@@ -17,7 +17,7 @@ using namespace emulator_definitions;
 
 void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   // make sure the pin is low
-  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::PayloadReady);
+  gpo_payload_ready_.SetLow();
 
   // Calculate number of packets
   uint16_t num_packets = data_size / kPacketLength;
@@ -42,7 +42,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   emulator_communication_.Transmit(buffer.data(), buffer_size,
                                    kDefaultCommunicationDelay);
 
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady);
+  gpo_payload_ready_.SetHigh();
 }
 
 }  // namespace binarx::emulator_liason

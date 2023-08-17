@@ -19,7 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-#include "abstraction_layer/inc/gpio_impl.h"
+#include "abstraction_layer/gpio/public/emulator_gpo.h"
+#include "abstraction_layer/gpio/public/internal/gpo.h"
 #include "abstraction_layer/inc/serial_impl.h"
 #include "abstraction_layer/inc/time_impl.h"
 #include "emulator/public/emulator.h"
@@ -68,12 +69,15 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
+bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kRedLed> gpo_red_led;
+bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kYellowLed> gpo_yellow_led;
+bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kGreenLed> gpo_green_led;
 binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
 binarx_serial_impl::UartImpl uart_controller = binarx_serial_impl::UartImpl();
 binarx_time_impl::TimeImpl time_controller = binarx_time_impl::TimeImpl();
 binarx::emulator::BinarXEmulator emulator = binarx::emulator::BinarXEmulator(
-    spi_controller, uart_controller, gpio_controller, time_controller);
+    spi_controller, uart_controller, gpo_red_led, gpo_yellow_led, gpo_green_led,
+    time_controller);
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {

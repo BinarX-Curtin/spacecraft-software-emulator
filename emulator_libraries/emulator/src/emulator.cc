@@ -59,7 +59,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   // Turn on the Green LED to inform that the payload ready interrupt was
   // received
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::RedLed);
+  gpo_red_led_.SetHigh();
 
   // create the packet buffer
   std::array<uint8_t, kPacketLength> packet_buffer = {0};
@@ -131,12 +131,12 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   payload_status_ = PayloadDataStatus::kTrasferCompleted;
 
   // Turn off Green LED
-  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::RedLed);
+  gpo_red_led_.SetLow();
 }
 
 void BinarXEmulator::Init() {
   // turn on Yellow LED
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::YellowLed);
+  gpo_yellow_led_.SetHigh();
 }
 
 void BinarXEmulator::PayloadReadyInterruptCallback() {
@@ -148,7 +148,7 @@ void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
 
 void BinarXEmulator::RunStartInfo() {
   // turn on red LED
-  gpio_controller_.SetHigh(binarx_gpio_interface::GpioSelector::GreenLed);
+  gpo_green_led_.SetHigh();
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
       "\r\nINFO: Button pressed and waiting for SPI transmission \r\n";
@@ -163,7 +163,7 @@ void BinarXEmulator::RunEndInfo() {
                                    kDefaultCommunicationDelay);
 
   // turn on red LED
-  gpio_controller_.SetLow(binarx_gpio_interface::GpioSelector::GreenLed);
+  gpo_green_led_.SetLow();
 }
 
 void BinarXEmulator::ErrorHandler() {

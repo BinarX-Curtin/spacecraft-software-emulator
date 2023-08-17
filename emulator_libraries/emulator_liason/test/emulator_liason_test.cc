@@ -4,13 +4,12 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 
-#include "abstraction_layer/gpio_interface.h"
+#include "abstraction_layer/gpio/public/gpo_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 #include "emulator_definitions/emulator_definitions.h"
 #include "external_libraries/ArduinoJson-v6.21.3.h"
 
 using namespace ::testing;
-
 using namespace binarx::emulator_definitions;
 
 class FakeSerialComunication
@@ -52,12 +51,11 @@ class SerialCommunicationMock
   FakeSerialComunication fake_;
 };
 
-class GpioMock : public binarx_gpio_interface::GpioInterface {
+class GpoMock : public bsf::hal::gpio::GpoInterface {
  public:
-  MOCK_METHOD(void, SetHigh, (binarx_gpio_interface::GpioSelector), (override));
-  MOCK_METHOD(void, SetLow, (binarx_gpio_interface::GpioSelector), (override));
-  MOCK_METHOD(void, TogglePin, (binarx_gpio_interface::GpioSelector),
-              (override));
+  MOCK_METHOD(void, SetHigh, (), (override));
+  MOCK_METHOD(void, SetLow, (), (override));
+  MOCK_METHOD(void, Toggle, (), (override));
 };
 
 MATCHER_P2(ArraysAreEqual, array, size, "") {
@@ -78,9 +76,9 @@ class EmulatorLiasonMockTesting
   EmulatorLiasonMockTesting(
       binarx_serial_interface::SerialCommunicationInterface&
           emulator_communication,
-      binarx_gpio_interface::GpioInterface& gpio_object)
+      bsf::hal::gpio::GpoInterface& gpo_payload_ready)
       : binarx::emulator_liason::EmulatorLiason(emulator_communication,
-                                                gpio_object){};
+                                                gpo_payload_ready){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
@@ -93,10 +91,10 @@ class EmulatorLiasonTest : public testing::Test {
  protected:
   // void SetUp() override{};
   NiceMock<SerialCommunicationMock> emulator_com_mock;
-  NiceMock<GpioMock> gpio_mock;
+  NiceMock<GpoMock> gpo_payload_ready_mock;
 
   EmulatorLiasonMockTesting emulator_liason =
-      EmulatorLiasonMockTesting(emulator_com_mock, gpio_mock);
+      EmulatorLiasonMockTesting(emulator_com_mock, gpo_payload_ready_mock);
 };
 
 template <size_t SIZE>
@@ -212,13 +210,9 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // Expect for the GPIO line to be set high
-  EXPECT_CALL(gpio_mock,
-              SetHigh(binarx_gpio_interface::GpioSelector::PayloadReady))
-      .Times(1);
+  EXPECT_CALL(gpo_payload_ready_mock, SetHigh()).Times(1);
 
-  EXPECT_CALL(gpio_mock,
-              SetLow(binarx_gpio_interface::GpioSelector::PayloadReady))
-      .Times(1);
+  EXPECT_CALL(gpo_payload_ready_mock, SetLow()).Times(1);
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer_size);

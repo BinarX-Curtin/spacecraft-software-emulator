@@ -22,10 +22,9 @@
 #include <stdlib.h>
 
 #include "ArduinoJson-v6.21.3.h"
-#include "abstraction_layer/gpio_interface.h"
-#include "abstraction_layer/inc/gpio_impl.h"
+#include "abstraction_layer/gpio/public/emulator_liason_gpo.h"
+#include "abstraction_layer/gpio/public/internal/gpo.h"
 #include "abstraction_layer/inc/serial_impl.h"
-#include "abstraction_layer/serial_communication_interface.h"
 #include "emulator_liason/public/emulator_liason.h"
 // #include "json_fwd.hpp"
 
@@ -56,10 +55,10 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 
-binarx_gpio_impl::GpioImpl gpio_controller = binarx_gpio_impl::GpioImpl();
+bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kPayloadReady> gpo_payload_ready;
 binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
 binarx::emulator_liason::EmulatorLiason emulator_liason =
-    binarx::emulator_liason::EmulatorLiason(spi_controller, gpio_controller);
+    binarx::emulator_liason::EmulatorLiason(spi_controller, gpo_payload_ready);
 
 // void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
 //{
@@ -160,7 +159,6 @@ int main(void) {
       // null terminator byte)
       uint16_t kDataSize = static_cast<uint16_t>(measureJsonPretty(doc) + 1);
       // Create a buffer where you will store the data
-
 
       doc["memory_buffer"] = kDataSize;
 
