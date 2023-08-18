@@ -4,7 +4,7 @@
 
 Binar (BIN-ah) is the Noongar word for “fireball”. We are a space program, building the next generation of Australian small spacecraft, at Curtin University’s Space Science and Technology Centre. Binar will advance our understanding of the solar system and lower the barrier for operating in space.  
 
-BinarX is a two-year program that will see students design and prototype science payloads for the Binar cubesat in 2022, and then build those projects for launch in 2023. Student payloads from three pilot schools will be part of Launch 3. Payload concepts will be directed by students and teachers, but might include sensors to study earth and space environment, samples for testing in microgravity, or samples for testing in a vacuum. They may also include a software-only payload running on Binar’s flight computer. 
+BinarX is a two-year program that will see students design and prototype science payloads for the Binar CubeSat in 2022, and then build those projects for launch in 2023. Student payloads from three pilot schools will be part of Launch 3. Payload concepts will be directed by students and teachers, but might include sensors to study earth and space environment, samples for testing in microgravity, or samples for testing in a vacuum. They may also include a software-only payload running on Binar’s flight computer. 
 
 Furthermore, Curtin University offers a spacecraft design and manufacturing units. 
 
@@ -14,60 +14,76 @@ The BinarX Emulator has been created to support the student's payload developmen
 
 The Emulator uses a Nucleo-H743ZIQ for electrical interfaces and computer resources. Through the SPI serial communication protocol, the students can transmit their data. In flight, Binar would transmit this data to the ground using radio. Instead, the emulator forwards the data received to the student's computer using UART communication protocol and USB cable.  
 
-Nucleo-H743ZIQ was chosen to allow for the project to increase in complexity with minimal work rework.  
+Nucleo-H743ZIQ was chosen to allow for the project to increase in complexity with minimal rework.  
 
 SPI was selected as all communication control is managed by the Emulator, and by the spacecraft during flight.  
 
-Communicating the student's data straight to the computer was selected due its simplicity. This implementation allows for minimum development time and high portability between devices.  
+Communicating the student's data straight to the computer through serial was selected due to its simplicity. This implementation allows for minimum development time and high portability between devices.  
 
-For development and testing, the emulator library was built using Bazel and the Google Mock library. The library was then included in a STM32CubeIDE project for integration testing. A payload project was created to test the Emulator. This payload example project has also been privided in this repo.  
+For development and testing, the emulator library was built using Bazel and the Google Mock library. The library was then included in a STM32CubeIDE project for integration testing with the Nucleo microcontroller. A payload project was also created to test the Emulator. Extra effort has gone into making this payload project a starting point for the BinarX students. This payload example project has also been provided in this repo.  
 
-## How to download and run 
+## How to download and run the STM32CubeIDE projects
 
-### Use the emulator 
+### Common steps for both both projects
+1. Download the STM32CubeIDE program to your computer from the st.com website.
+    - Link: https://www.st.com/en/development-tools/stm32cubeide.html
+2. Download the BinarX Emulator project from the STM32CubeIDE project folder. The project can be found on the Binar GitHub page.
+    - Tutorial: https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives
+3. Import the BinarX Emulator project to STM32CubeIDE. (Needs testing as it might only work for Linux)
+    - Go to the Information Centre page within STM32CubeIDE. The first time you open STM32CubeIDE it should open up with the information center. Otherwise, click on the blue button with an "i" in it. 
+    - From the information center, click on "import project"
+    - Click "Directory" and navigate and then open the STM32CubeIDE projects folder
+    - Select all and press finish. 
+4. Build the project and check for errors 
+    - In STM32CubeIDE press the hammer button on the top left corner
+    - Check for errors within the "Console" Window in STM32CubeIDE
+
+### Flash the emulator 
 
 This section is intended for users that want to develop their payload and need to get the emulator working in a NUCLEO-H743ZIQ microcontroller.  
+1. Complete the common steps above to flash the binarx_emulato-h743zi project
+2. If there are no errors, connect the NUCLEO-H743ZIQ to the computer using the USB cable. 
+    - Make sure you connect the micro-USB connector to the correct port as there are two.   
+    - The correct one has a label that says "USB PWR". The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
+3. Flash the code to the microcontroller by pressing the green play button. If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
+4. Once flashed, if all worked as intended, you should see the yellow LED turn on.  
+    - The yellow LED is pretty much in the centre of the board. 
+    - There are more LEDs near the edges of the board that are independent of the emulator
+5. Go to the "How to use section" to continue from here
 
-1. Download the STM32CubeIDE program to your computer 
-2. Download the BinarX Emulator project from the STM32CubeIDE project folder 
-3. Import the BinarX Emulator project to STM32CubeIDE 
-4. Build the project and check for errors 
-5. If there are no errors, connect the NUCLEO-H743ZIQ to the computer using the USB cable. Make sure you connect the micro-USB connector to the correct port.  
-6. Flash the code to the microcontroller by pressing  . If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
-7. Once flashed, if all worked as intended, you should see this yellow LED turn on.  
-8. Go to the How to use section 
-
-### Use the Payload example 
+### Flash the Payload example 
 
 This section quickly explains how to flash the payload example. The payload example was created for a NUCLEO-F303.  
-
-1. If you have not done so already, download the STM32CubeIDE program to your computer 
-2. Download the BinarX payload example project from the STM32CubeIDE project folder 
-3. Import the BinarX payload example project to STM32CubeIDE 
-4. Build the project and check for errors 
-5. If there are no errors, connect a NUCLEO-F303 to the computer using the USB cable.  
-6. Flash the code to the microcontroller by pressing  . If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
-7. Once flashed, if all worked as intended, you should see the Yellow LED turn on. 
-8. Go to the How to use section 
+1. Complete the common steps above to flash the bxse_f3_payload_emulator project
+2. If there are no errors, connect the NUCLEO-F303 to the computer using the USB cable.
+3. Flash the code to the microcontroller by pressing the green play button. If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
+4. Go to the "How to use section" to continue from here
 
 ### Emulator for developers 
 
+### Emulator Libraries
 The Emulator libraries has been developed in C++ using the Bazel tool and unit tested with the Google Mock library. There are four main folders within the emulator_libraries folder. 
 1. "emulator" is the library intended to mimic the comunicating with the binar flight computer. It also transmits any data received from the payload back to the computer. 
 2. "emulator_liason" is the library used by the student's payload to comunicate apropiatelly with the emulator.
 3. "abstraction_layer" the emulator and emulator_liason require hardware connections to operate correctly. The "abtraction_layer" library abstracts this connections to allow for the librtaries to be tested. 
 4. "external_libraries" the students are intended to use JSON as the data formating structure. A JSON library has already been chosen to test the emulator and it has been provided to support the students. 
 
+#### Running the Tests
+From the emulator_libraries folder you can run "bazel test <target_test>"
+- For emulator_liason: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator_liason/test:emulator_liason_test"
+- For emulator: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator/test:emulator_test"
+
+### Stm32CubeIDE projects
 The emulator_libraries folder has been copied to the Stm32CubeIDE project for the IDE to find and build the software.  The STM32CubeIDE projects have been setup to have look for this library as a relative path whithin the STM32 project.  Therefore, if the code withing the emulator_libraries is updated, one should only have to replace the folder within the project directories. 
 
 Whithin the STM32CubeIDE projects three things require attention.
 1. The IOC file that configures the Nucleo board to have the appropiate SPI and GPIO connections. 
-2. The main.c file was renamed to main.cpp as required to creat C++ project.
+2. The main.c file was renamed to main.cpp as required to creat C++ project. Annoingly, if you change the IOC file a new main.c. 
 3. Then the main.cpp code was edited to add the required functionality. 
 
 ## How to use the project 
 This sections assumes that you have downloaded and flashed, or uploaded, the code to the microcontrollers as explained above. The simple steps to connect and start using the emulator and payload example are;
-1. Plug in the Emulator microcontroller to the computer using the USB cable. Warning, there are two micro usb ports on the microcontroller and only one will work correctly. The correct one has a label that sais "USB PWR". The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
+1. Plug in the Emulator microcontroller to the computer using the USB cable. Warning, there are two micro usb ports on the microcontroller and only one will work correctly. The correct one has a label that says "USB PWR". The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
     - The Emulator is running correctly if the Yellow LED turns on. 
 2. Open the serial terminal of choice. To use the STM32CubeIDE serial terminal you can follow this link.  
     - https://community.st.com/t5/stm32-mcus/how-to-use-the-stm32cubeide-terminal-to-send-and-receive-data/ta-p/49434
@@ -92,19 +108,13 @@ This sections assumes that you have downloaded and flashed, or uploaded, the cod
     - The payload data is too large for the emulator limits
     - or you have incorrectly requested to transmit more data that you had intended
 3. "ERROR: Sorry the message was not received correctly by the Binar Emulator"
-    - The size of the payload data was received correctly by the emulator but an error opccured during the transmision of the data. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
-4. "ERROR: Sorry an error occured with the Binar Emulator"
+    - The size of the payload data was received correctly by the emulator but an error occurred during the transmission of the data. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
+4. "ERROR: Sorry an error occurred with the Binar Emulator"
     - This error is unlikely. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
 5. If the Emulator has timeout
     - Then the payload ready pin did not trigger an interrupt on the emulator
 
-As Binar X documentation 
 
-Include credits 
-
-Add license 
-
-Include tests 
 
  
 
