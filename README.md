@@ -59,7 +59,7 @@ This section quickly explains how to flash the payload example. The payload exam
 3. Flash the code to the microcontroller by pressing the green play button. If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
 4. Go to the "How to use section" to continue from here
 
-### Emulator for developers 
+## Emulator for developers 
 
 ### Emulator Libraries
 The Emulator libraries has been developed in C++ using the Bazel tool and unit tested with the Google Mock library. There are four main folders within the emulator_libraries folder. 
