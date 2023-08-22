@@ -38,11 +38,21 @@ void BinarXEmulator::Run() {
   uint32_t emulator_timeout =
       time_controller_.GetTicks() + kWaitForPayloadMaxTime;
 
+  // Turn on payload
+  gpo_payload_switch_.SetHigh();
+
   // Wait for payload data transfer or until timeout
   while (emulator_timeout > time_controller_.GetTicks() &&
          payload_status_ != PayloadDataStatus::kTrasferCompleted) {
-    PayloadCommunicationHandler();
+    // Check if the payload ready interrupt has been trigered
+    if (payload_status_ == PayloadDataStatus::kPayloadReady) {
+      // Run the communication script
+      PayloadCommunicationHandler();
+    }
   }
+
+  // Turn off payload
+  gpo_payload_switch_.SetLow();
 
   // Reset the emulator states
   button_pressed_ = false;
@@ -52,12 +62,7 @@ void BinarXEmulator::Run() {
 }
 
 void BinarXEmulator::PayloadCommunicationHandler() {
-  // return if the payload is not ready
-  if (payload_status_ != PayloadDataStatus::kPayloadReady) {
-    return;
-  }
-
-  // Turn on the Green LED to inform that the payload ready interrupt was
+  // Turn on the red LED to inform that the payload ready interrupt was
   // received
   gpo_red_led_.SetHigh();
 
@@ -130,7 +135,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   // Move to the next state as the communication has been completed
   payload_status_ = PayloadDataStatus::kTrasferCompleted;
 
-  // Turn off Green LED
+  // Turn off LED
   gpo_red_led_.SetLow();
 }
 
@@ -147,7 +152,7 @@ void BinarXEmulator::PayloadReadyInterruptCallback() {
 void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
 
 void BinarXEmulator::RunStartInfo() {
-  // turn on red LED
+  // turn on red LED to communicate with students
   gpo_green_led_.SetHigh();
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
@@ -162,7 +167,7 @@ void BinarXEmulator::RunEndInfo() {
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 
-  // turn on red LED
+  // turn off LED
   gpo_green_led_.SetLow();
 }
 

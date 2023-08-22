@@ -23,10 +23,10 @@ namespace bsf::hal::gpio {
  *
  */
 enum class GpoPin {
-  kRedLed,    /**< Red Led */
-  kYellowLed, /**< Yellow Led */
-  kGreenLed,  /**< Green Led */
-
+  kRedLed,       /**< Red Led */
+  kYellowLed,    /**< Yellow Led */
+  kGreenLed,     /**< Green Led */
+  kPayloadSwitch /**< Turn the payload on and off */
 };
 
 }  // namespace bsf::hal::gpio

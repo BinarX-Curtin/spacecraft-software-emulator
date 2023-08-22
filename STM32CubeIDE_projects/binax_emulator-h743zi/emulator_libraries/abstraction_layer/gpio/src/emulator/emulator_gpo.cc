@@ -58,4 +58,20 @@ void Gpo<GpoPin::kGreenLed>::Toggle() {
   HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
 }
 
+template <>
+void Gpo<GpoPin::kPayloadSwitch>::SetHigh() {
+  HAL_GPIO_WritePin(Payload_Switch_GPIO_Port, Payload_Switch_Pin, GPIO_PIN_SET);
+}
+
+template <>
+void Gpo<GpoPin::kPayloadSwitch>::SetLow() {
+  HAL_GPIO_WritePin(Payload_Switch_GPIO_Port, Payload_Switch_Pin,
+                    GPIO_PIN_RESET);
+}
+
+template <>
+void Gpo<GpoPin::kPayloadSwitch>::Toggle() {
+  HAL_GPIO_TogglePin(Payload_Switch_GPIO_Port, Payload_Switch_Pin);
+}
+
 }  // namespace bsf::hal::gpio

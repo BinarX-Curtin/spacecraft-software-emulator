@@ -42,12 +42,14 @@ class BinarXEmulator {
                  bsf::hal::gpio::GpoInterface& gpo_red_led,
                  bsf::hal::gpio::GpoInterface& gpo_yellow_led,
                  bsf::hal::gpio::GpoInterface& gpo_green_led,
+                 bsf::hal::gpio::GpoInterface& gpo_payload_switch,
                  binarx_time_interface::TimeInterface& time_object)
       : payload_communication_(payload_communication),
         computer_communication_(computer_communication),
         gpo_red_led_(gpo_red_led),
         gpo_yellow_led_(gpo_yellow_led),
         gpo_green_led_(gpo_green_led),
+        gpo_payload_switch_(gpo_payload_switch),
         time_controller_(time_object),
         button_pressed_(false),
         payload_status_(PayloadDataStatus::kWaitingForPayload),
@@ -93,6 +95,8 @@ class BinarXEmulator {
   bsf::hal::gpio::GpoInterface& gpo_yellow_led_;
   /**< Reference to the green Led GPO implementation*/
   bsf::hal::gpio::GpoInterface& gpo_green_led_;
+  /**< Reference to the Payload switch GPO implementation*/
+  bsf::hal::gpio::GpoInterface& gpo_payload_switch_;
   /**< Reference to the time related implementation*/
   binarx_time_interface::TimeInterface& time_controller_;
 
