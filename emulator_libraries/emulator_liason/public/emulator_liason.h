@@ -11,8 +11,11 @@
 #include "abstraction_layer/gpio/public/gpi_interface.h"
 #include "abstraction_layer/gpio/public/gpo_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
+#include "emulator_definitions/emulator_definitions.h"
 
 namespace binarx::emulator_liason {
+
+using namespace binarx::emulator_definitions;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
@@ -29,14 +32,15 @@ class EmulatorLiason {
    */
   EmulatorLiason(binarx_serial_interface::SerialCommunicationInterface&
                      emulator_communication,
-                 bsf::hal::gpio::GpoInterface& gpo_payload_ready,
-                 bsf::hal::gpio::GpiInterface& gpi_payload_chip_select)
+                 bsf::hal::gpio::GpoInterface& gpo_payload_ready)
       : emulator_communication_(emulator_communication),
         gpo_payload_ready_(gpo_payload_ready),
-        gpi_payload_chip_select_(gpi_payload_chip_select),
-        payload_status_(PayloadDataStatus::kPayloadReady){};
+        bytes_to_send(0),
+        payload_status_(PayloadDataStatus::kCapturingData){};
 
   void Transmit(uint8_t* buffer, uint16_t size);
+  void ChipSelectInterrupt();
+  void TransmitCallbackInterrupt();
 
  private:
   /**< Reference to the payload comunication implementation*/
@@ -44,8 +48,12 @@ class EmulatorLiason {
       emulator_communication_;
   /**< Reference to the GPIO implementation*/
   bsf::hal::gpio::GpoInterface& gpo_payload_ready_;
-  /**< Reference to the GPIO implementation*/
-  bsf::hal::gpio::GpiInterface& gpi_payload_chip_select_;
+  std::array<uint8_t, kNumberOfBytesInHeader> buffer_header;
+  /**< Buffer to store the data to send*/
+  std::array<uint8_t, kMaxPayloadDataLength> buffer_data;
+  /**< size of the data plus any bytes extra to get a full packet that must be
+   * sent to the emulator */
+  uint16_t bytes_to_send;
 
  protected:
   /**
@@ -58,7 +66,8 @@ class EmulatorLiason {
    *
    */
   enum class PayloadDataStatus {
-    kPayloadReady,
+    kCapturingData,
+    kPayloadReadyToTransmit,
     kHeaderSent,
     kTrasferCompleted,
   };
