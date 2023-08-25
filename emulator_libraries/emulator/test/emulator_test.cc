@@ -57,10 +57,12 @@ class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
                       bsf::hal::gpio::GpoInterface& gpo_yellow_led,
                       bsf::hal::gpio::GpoInterface& gpo_green_led,
                       bsf::hal::gpio::GpoInterface& gpo_payload_switch,
+                      bsf::hal::gpio::GpoInterface& gpo_payload_chip_select,
                       binarx_time_interface::TimeInterface& time_object)
       : binarx::emulator::BinarXEmulator(
             payload_communication, computer_communication, gpo_red_led,
-            gpo_yellow_led, gpo_green_led, gpo_payload_switch, time_object){};
+            gpo_yellow_led, gpo_green_led, gpo_payload_switch,
+            gpo_payload_chip_select, time_object){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
@@ -79,11 +81,13 @@ class EmulatorTest : public testing::Test {
   NiceMock<GpoMock> gpo_yellow_led_mock;
   NiceMock<GpoMock> gpo_green_led_mock;
   NiceMock<GpoMock> gpo_payload_switch;
+  NiceMock<GpoMock> gpo_payload_chip_select;
   NiceMock<TimeMock> time_mock;
 
   EmulatorMockTesting emulator = EmulatorMockTesting(
       payload_com_mock, computer_com_mock, gpo_red_led_mock,
-      gpo_yellow_led_mock, gpo_green_led_mock, gpo_payload_switch, time_mock);
+      gpo_yellow_led_mock, gpo_green_led_mock, gpo_payload_switch,
+      gpo_payload_chip_select, time_mock);
 };
 
 uint16_t CalculateNumberOfPackets(uint16_t data_size) {
@@ -105,7 +109,7 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
-  // The emulator should receive the number of packets to the payload has to
+  // The emulator should receive the number of bytes that the payload has to
   // send
   uint8_t metadata_packet[kNumberOfBytesInHeader] = {
       kSyncByte, static_cast<uint8_t>(kDataSize >> 8),
@@ -135,6 +139,10 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
                        sizeof(data_buffer), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
+  // The CS line should be toggled to allow for transmisions
+  EXPECT_CALL(gpo_payload_chip_select, SetHigh()).Times(1);
+  EXPECT_CALL(gpo_payload_chip_select, SetLow()).Times(1);
+
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
       EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
@@ -143,8 +151,8 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
 }
 
 TEST_F(EmulatorTest, Run_IsPayloadPoweredOn) {
-  // Has the Red Led turn on when the emulator starts running
-  EXPECT_CALL(gpo_payload_switch, SetHigh()).Times(1);
+  // Expect a call to check if the the payload is turned on.
+  EXPECT_CALL(gpo_payload_switch, SetHigh()).Times(2);
   // And is it turned off
   EXPECT_CALL(gpo_payload_switch, SetLow()).Times(1);
 

@@ -11,7 +11,7 @@
 
 #pragma once
 
-#include "abstraction_layer/gpio/public/internal/gpo.h"
+#include "abstraction_layer/gpio/public/internal/gpi.h"
 
 namespace bsf::hal::gpio {
 
@@ -20,8 +20,8 @@ namespace bsf::hal::gpio {
  * purpose output.
  *
  */
-enum class GpoPin {
-  kPayloadReady, /**< Payload ready pin to tell the emulator*/
+enum class GpiPin {
+  kPayloadChipSelect, /**< Payload ready pin to tell the emulator*/
 };
 
 }  // namespace bsf::hal::gpio

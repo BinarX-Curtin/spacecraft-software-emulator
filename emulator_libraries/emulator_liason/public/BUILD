@@ -6,5 +6,6 @@ cc_library(
   visibility = ["//visibility:public"], 
   deps = ["//abstraction_layer:serial_communication_interface", 
           "//abstraction_layer/gpio/public:gpo_interface",
+          "//abstraction_layer/gpio/public:gpi_interface",
           "//emulator_definitions:emulator_definitions"],
 )

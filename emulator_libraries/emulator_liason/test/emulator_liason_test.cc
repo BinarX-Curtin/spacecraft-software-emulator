@@ -4,7 +4,7 @@
 #include <gtest/gtest.h>
 #include <sys/time.h>
 
-#include "abstraction_layer/gpio/public/gpo_interface.h"
+#include "abstraction_layer/gpio/public/gpi_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 #include "emulator_definitions/emulator_definitions.h"
 #include "external_libraries/ArduinoJson-v6.21.3.h"
@@ -30,6 +30,10 @@ class GpoMock : public bsf::hal::gpio::GpoInterface {
   MOCK_METHOD(void, SetLow, (), (override));
   MOCK_METHOD(void, Toggle, (), (override));
 };
+class GpiMock : public bsf::hal::gpio::GpiInterface {
+ public:
+  MOCK_METHOD(bool, IsHigh, (), (const));
+};
 
 MATCHER_P2(ArraysAreEqual, array, size, "") {
   for (uint16_t i = 0; i < size; i++) {
@@ -49,9 +53,11 @@ class EmulatorLiasonMockTesting
   EmulatorLiasonMockTesting(
       binarx_serial_interface::SerialCommunicationInterface&
           emulator_communication,
-      bsf::hal::gpio::GpoInterface& gpo_payload_ready)
+      bsf::hal::gpio::GpoInterface& gpo_payload_ready,
+      bsf::hal::gpio::GpiInterface& gpi_payload_chip_select)
       : binarx::emulator_liason::EmulatorLiason(emulator_communication,
-                                                gpo_payload_ready){};
+                                                gpo_payload_ready,
+                                                gpi_payload_chip_select){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
@@ -65,9 +71,10 @@ class EmulatorLiasonTest : public testing::Test {
   // void SetUp() override{};
   NiceMock<SerialCommunicationMock> emulator_com_mock;
   NiceMock<GpoMock> gpo_payload_ready_mock;
+  NiceMock<GpiMock> gpi_payload_chip_select;
 
-  EmulatorLiasonMockTesting emulator_liason =
-      EmulatorLiasonMockTesting(emulator_com_mock, gpo_payload_ready_mock);
+  EmulatorLiasonMockTesting emulator_liason = EmulatorLiasonMockTesting(
+      emulator_com_mock, gpo_payload_ready_mock, gpi_payload_chip_select);
 };
 
 template <size_t SIZE>
@@ -96,6 +103,10 @@ TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
       emulator_com_mock,
       TransmitIt(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
+  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer.size());
@@ -136,6 +147,10 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
       TransmitIt(
           ArraysAreEqual(buffer.data(), kDataSize + kNumberOfBytesInHeader), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
+  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), kDataSize);
@@ -185,6 +200,10 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
   EXPECT_CALL(gpo_payload_ready_mock, SetHigh()).Times(1);
 
   EXPECT_CALL(gpo_payload_ready_mock, SetLow()).Times(1);
+
+  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
+      .WillOnce(Return(true))
+      .WillOnce(Return(false));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer_size);
