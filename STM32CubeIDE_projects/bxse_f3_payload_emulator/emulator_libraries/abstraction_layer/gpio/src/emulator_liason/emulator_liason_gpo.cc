@@ -1,6 +1,6 @@
 /**
- * @file bcm_cm4_gpo.cc
- * @author Stuart Buchan, Binar Space Program
+ * @file emulator_liason_gpo.cc
+ * @author Tristan Ward, Binar Space Program
  * @brief This file contains the definitions for the bcm_cm4 implementation of
  * the general purpose output class.
  *
@@ -8,24 +8,25 @@
  *
  */
 
-#include "abstraction_layer/gpio/public/emulator_liason_gpo.h"
-
+#include "abstraction_layer/gpio/public/emulator_liason_gpi.h"
 #include "main.h"
 
 namespace bsf::hal::gpio {
 template <>
-void Gpo<GpoPin::kPayloadReady>::SetHigh() {
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
+void Gpo<GpiPin::kPayloadChipSelect>::SetHigh() {
+  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
+                    GPIO_PIN_SET);
 }
 
 template <>
-void Gpo<GpoPin::kPayloadReady>::SetLow() {
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+void Gpo<GpiPin::kPayloadChipSelect>::SetLow() {
+  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
+                    GPIO_PIN_RESET);
 }
 
 template <>
-void Gpo<GpoPin::kPayloadReady>::Toggle() {
-  HAL_GPIO_TogglePin(PL_GPIO_Port, PL_Pin);
+void Gpo<GpiPin::kPayloadChipSelect>::Toggle() {
+  HAL_GPIO_TogglePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin);
 }
 
 }  // namespace bsf::hal::gpio

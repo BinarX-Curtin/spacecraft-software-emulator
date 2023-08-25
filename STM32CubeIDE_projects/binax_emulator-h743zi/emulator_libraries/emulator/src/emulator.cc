@@ -32,11 +32,14 @@ void BinarXEmulator::Run() {
   if (!button_pressed_) {
     return;
   }
-  BinarXEmulator::RunStartInfo();
 
   // Start the timeout timer by storing the now time
   uint32_t emulator_timeout =
       time_controller_.GetTicks() + kWaitForPayloadMaxTime;
+
+  BinarXEmulator::RunStartInfo();
+
+  time_controller_.Delay(50);
 
   // Turn on payload
   gpo_payload_switch_.SetHigh();
@@ -59,6 +62,9 @@ void BinarXEmulator::Run() {
   payload_status_ = PayloadDataStatus::kWaitingForPayload;
 
   BinarXEmulator::RunEndInfo();
+
+  // Turn payload on so it can be flashed by the students
+  gpo_payload_switch_.SetHigh();
 }
 
 void BinarXEmulator::PayloadCommunicationHandler() {
@@ -68,6 +74,11 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   // create the packet buffer
   std::array<uint8_t, kPacketLength> packet_buffer = {0};
+
+  // Set chip select High
+  gpo_payload_chip_select_.SetHigh();
+
+  time_controller_.Delay(50);
 
   // Receive the metadata
   binarx_serial_interface::SerialStatus serial_status =
@@ -117,6 +128,9 @@ void BinarXEmulator::PayloadCommunicationHandler() {
                   data_buffer.begin() + location_start_for_packet);
       }
 
+      // Set chip select High
+      gpo_payload_chip_select_.SetLow();
+
       // Check the status of the SPI transaction
       if (payload_status_ == PayloadDataStatus::kPayloadReady) {
         // Send the data over UART if SPI data was received succesfully
@@ -142,6 +156,10 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 void BinarXEmulator::Init() {
   // turn on Yellow LED
   gpo_yellow_led_.SetHigh();
+  // Power the payload so it can be flashed
+  gpo_payload_switch_.SetHigh();
+  // Set chip select to low
+  gpo_payload_chip_select_.SetLow();
 }
 
 void BinarXEmulator::PayloadReadyInterruptCallback() {
@@ -149,7 +167,13 @@ void BinarXEmulator::PayloadReadyInterruptCallback() {
     payload_status_ = PayloadDataStatus::kPayloadReady;
   }
 }
-void BinarXEmulator::ButtonPressCallback() { button_pressed_ = true; }
+void BinarXEmulator::ButtonPressCallback() {
+  button_pressed_ = true;
+  // Power off the payload as it was on so it could be flashed.
+  gpo_payload_switch_.SetLow();
+  //  make sure of the status
+  payload_status_ = PayloadDataStatus::kWaitingForPayload;
+}
 
 void BinarXEmulator::RunStartInfo() {
   // turn on red LED to communicate with students

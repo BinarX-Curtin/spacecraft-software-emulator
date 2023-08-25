@@ -73,12 +73,14 @@ bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kRedLed> gpo_red_led;
 bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kYellowLed> gpo_yellow_led;
 bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kGreenLed> gpo_green_led;
 bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kPayloadSwitch> gpo_payload_switch;
+bsf::hal::gpio::Gpo<bsf::hal::gpio::GpoPin::kPayloadChipSelect>
+    gpo_payload_chip_select;
 binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
 binarx_serial_impl::UartImpl uart_controller = binarx_serial_impl::UartImpl();
 binarx_time_impl::TimeImpl time_controller = binarx_time_impl::TimeImpl();
 binarx::emulator::BinarXEmulator emulator = binarx::emulator::BinarXEmulator(
     spi_controller, uart_controller, gpo_red_led, gpo_yellow_led, gpo_green_led,
-    gpo_payload_switch, time_controller);
+    gpo_payload_switch, gpo_payload_chip_select, time_controller);
 
 extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
@@ -218,7 +220,7 @@ static void MX_SPI1_Init(void) {
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.CLKPhase = SPI_PHASE_2EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
   hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
@@ -346,7 +348,7 @@ static void MX_GPIO_Init(void) {
   HAL_GPIO_WritePin(GPIOE, Payload_Switch_Pin | LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(USB_OTG_FS_PWR_EN_GPIO_Port, USB_OTG_FS_PWR_EN_Pin,
+  HAL_GPIO_WritePin(GPIOD, USB_OTG_FS_PWR_EN_Pin | Payload_Chip_Select_Pin,
                     GPIO_PIN_RESET);
 
   /*Configure GPIO pin : Button_Pin */
@@ -375,6 +377,13 @@ static void MX_GPIO_Init(void) {
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_OTG_FS_PWR_EN_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Payload_Chip_Select_Pin */
+  GPIO_InitStruct.Pin = Payload_Chip_Select_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(Payload_Chip_Select_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Payload_Ready_Pin */
   GPIO_InitStruct.Pin = Payload_Ready_Pin;

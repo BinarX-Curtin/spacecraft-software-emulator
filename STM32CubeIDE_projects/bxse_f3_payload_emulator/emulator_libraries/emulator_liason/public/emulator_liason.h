@@ -8,6 +8,7 @@
 #pragma once
 #include <stdint.h>
 
+#include "abstraction_layer/gpio/public/gpi_interface.h"
 #include "abstraction_layer/gpio/public/gpo_interface.h"
 #include "abstraction_layer/serial_communication_interface.h"
 
@@ -28,9 +29,11 @@ class EmulatorLiason {
    */
   EmulatorLiason(binarx_serial_interface::SerialCommunicationInterface&
                      emulator_communication,
-                 bsf::hal::gpio::GpoInterface& gpo_payload_ready)
+                 bsf::hal::gpio::GpoInterface& gpo_payload_ready,
+                 bsf::hal::gpio::GpiInterface& gpi_payload_chip_select)
       : emulator_communication_(emulator_communication),
         gpo_payload_ready_(gpo_payload_ready),
+        gpi_payload_chip_select_(gpi_payload_chip_select),
         payload_status_(PayloadDataStatus::kPayloadReady){};
 
   void Transmit(uint8_t* buffer, uint16_t size);
@@ -41,6 +44,8 @@ class EmulatorLiason {
       emulator_communication_;
   /**< Reference to the GPIO implementation*/
   bsf::hal::gpio::GpoInterface& gpo_payload_ready_;
+  /**< Reference to the GPIO implementation*/
+  bsf::hal::gpio::GpiInterface& gpi_payload_chip_select_;
 
  protected:
   /**

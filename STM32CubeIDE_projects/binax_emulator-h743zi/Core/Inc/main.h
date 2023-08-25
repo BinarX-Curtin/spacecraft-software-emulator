@@ -72,6 +72,8 @@ void Error_Handler(void);
 #define STLINK_TX_GPIO_Port GPIOD
 #define USB_OTG_FS_PWR_EN_Pin GPIO_PIN_10
 #define USB_OTG_FS_PWR_EN_GPIO_Port GPIOD
+#define Payload_Chip_Select_Pin GPIO_PIN_14
+#define Payload_Chip_Select_GPIO_Port GPIOD
 #define Payload_Ready_Pin GPIO_PIN_15
 #define Payload_Ready_GPIO_Port GPIOD
 #define Payload_Ready_EXTI_IRQn EXTI15_10_IRQn

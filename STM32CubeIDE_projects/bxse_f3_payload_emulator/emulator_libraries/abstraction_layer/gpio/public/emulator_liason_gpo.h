@@ -1,9 +1,9 @@
 /**
- * @file bcm_cm4_gpo.h
- * @author Stuart Buchan, Binar Space Program
+ * @file emulator_liason_gpo.h
+ * @author Tristan Ward, Binar Space Program
  * @brief This file contains the definition for the enumerated type
- * 'GpoPin', which contains an exhaustive list of all the output pins on the CM4
- * core of the satellite flight computer.
+ * 'GpoPin', which contains an exhaustive list of all the output pins for the
+ * emulator_liason library.
  *
  * @copyright Copyright (c) 2023
  *
@@ -18,8 +18,6 @@ namespace bsf::hal::gpio {
 /**
  * @brief Enum class representing the possible pinout options for general
  * purpose output.
- *
- * TODO(stuartbuchan): Refactor these to use kConstStyleNaming.
  *
  */
 enum class GpoPin {

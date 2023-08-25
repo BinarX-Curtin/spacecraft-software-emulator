@@ -37,11 +37,16 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
   for (uint16_t i = 0; i < data_size; i++) {
     buffer[i + kNumberOfBytesInHeader] = data[i];
   };
-
+  // Wait to chip select to be high
+  while (!gpi_payload_chip_select_.IsHigh()) {  // do nothing
+  };
   // Send the data
   emulator_communication_.TransmitIt(buffer.data(), buffer_size);
 
   gpo_payload_ready_.SetHigh();
+  // Wait for chip select to be low
+  while (gpi_payload_chip_select_.IsHigh()) {  // do nothing
+  };
 }
 
 }  // namespace binarx::emulator_liason

@@ -1,4 +1,4 @@
 exports_files([
-    "bcm_cm4_gpo.cc",
-    "bcm_cm4_gpi.cc",
+    "emulator_liason_gpo.cc",
+    "emulator_liason_gpi.cc",
 ])
