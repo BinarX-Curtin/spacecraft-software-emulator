@@ -53,11 +53,9 @@ class EmulatorLiasonMockTesting
   EmulatorLiasonMockTesting(
       binarx_serial_interface::SerialCommunicationInterface&
           emulator_communication,
-      bsf::hal::gpio::GpoInterface& gpo_payload_ready,
-      bsf::hal::gpio::GpiInterface& gpi_payload_chip_select)
+      bsf::hal::gpio::GpoInterface& gpo_payload_ready)
       : binarx::emulator_liason::EmulatorLiason(emulator_communication,
-                                                gpo_payload_ready,
-                                                gpi_payload_chip_select){};
+                                                gpo_payload_ready){};
 
   void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
     payload_status_ = value;
@@ -71,10 +69,9 @@ class EmulatorLiasonTest : public testing::Test {
   // void SetUp() override{};
   NiceMock<SerialCommunicationMock> emulator_com_mock;
   NiceMock<GpoMock> gpo_payload_ready_mock;
-  NiceMock<GpiMock> gpi_payload_chip_select;
 
-  EmulatorLiasonMockTesting emulator_liason = EmulatorLiasonMockTesting(
-      emulator_com_mock, gpo_payload_ready_mock, gpi_payload_chip_select);
+  EmulatorLiasonMockTesting emulator_liason =
+      EmulatorLiasonMockTesting(emulator_com_mock, gpo_payload_ready_mock);
 };
 
 template <size_t SIZE>
@@ -86,30 +83,30 @@ void FillHeader(std::array<uint8_t, SIZE>& buffer, uint16_t data_size) {
 
 TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
   constexpr uint16_t kDataSize = kPacketLength;
-  constexpr uint16_t kBufferSize = kPacketLength + kNumberOfBytesInHeader;
-  std::array<uint8_t, kBufferSize> buffer = {0};
+  std::array<uint8_t, kDataSize> buffer = {0};
   uint8_t count = 0;
   for (auto& item : buffer) {
     item = count++;
   }
 
-  FillHeader(buffer, kDataSize);
+  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
 
-  std::array<uint8_t, kDataSize> data_buffer;
-  std::copy(buffer.begin() + kNumberOfBytesInHeader, buffer.end(),
-            data_buffer.begin());
+  FillHeader(header_array, kDataSize);
 
   EXPECT_CALL(
       emulator_com_mock,
-      TransmitIt(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize))
+      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
+                 kNumberOfBytesInHeader))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
-  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
-      .WillOnce(Return(true))
-      .WillOnce(Return(false));
+  EXPECT_CALL(emulator_com_mock,
+              TransmitIt(ArraysAreEqual(buffer.data(), kDataSize), kDataSize))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
-  emulator_liason.Transmit(data_buffer.data(), data_buffer.size());
+  emulator_liason.Transmit(buffer.data(), kDataSize);
+  emulator_liason.ChipSelectInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
@@ -135,25 +132,24 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   std::array<uint8_t, 1000> data_buffer;
   serializeJsonPretty(doc, data_buffer.data(), kDataSize);
 
-  std::array<uint8_t, kMaxPayloadDataLength> buffer;
+  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
 
-  FillHeader(buffer, kDataSize);
-
-  std::copy(data_buffer.begin(), data_buffer.begin() + kDataSize,
-            buffer.begin() + kNumberOfBytesInHeader);
+  FillHeader(header_array, kDataSize);
 
   EXPECT_CALL(
       emulator_com_mock,
-      TransmitIt(
-          ArraysAreEqual(buffer.data(), kDataSize + kNumberOfBytesInHeader), _))
+      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
+                 kNumberOfBytesInHeader))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
-  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
-      .WillOnce(Return(true))
-      .WillOnce(Return(false));
+  EXPECT_CALL(emulator_com_mock,
+              TransmitIt(ArraysAreEqual(data_buffer.data(), kDataSize), _))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), kDataSize);
+  emulator_liason.ChipSelectInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 class EmulatorLiasonParameterizedTestFixture2
@@ -180,33 +176,30 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
-  // create a buffer with
-  uint16_t buffer_size =
-      expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
-
-  std::array<uint8_t, kMaxPayloadDataLength + kNumberOfBytesInHeader> buffer;
-  FillHeader(buffer, data_buffer_size);
-
-  for (uint16_t i = 0; i < data_buffer_size; i++) {
-    buffer[i + kNumberOfBytesInHeader] = data_buffer[i];
-  };
-
-  // transmit all this bytes
-  EXPECT_CALL(emulator_com_mock,
-              TransmitIt(ArraysAreEqual(buffer, data_buffer_size), buffer_size))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
   // Expect for the GPIO line to be set high
   EXPECT_CALL(gpo_payload_ready_mock, SetHigh()).Times(1);
 
   EXPECT_CALL(gpo_payload_ready_mock, SetLow()).Times(1);
 
-  EXPECT_CALL(gpi_payload_chip_select, IsHigh())
-      .WillOnce(Return(true))
-      .WillOnce(Return(false));
+  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
+
+  FillHeader(header_array, data_buffer_size);
+
+  EXPECT_CALL(
+      emulator_com_mock,
+      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
+                 kNumberOfBytesInHeader))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
+  EXPECT_CALL(emulator_com_mock,
+              TransmitIt(ArraysAreEqual(data_buffer.data(), data_buffer_size),
+                         expected_packet_num * kPacketLength))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer_size);
+  emulator_liason.ChipSelectInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 INSTANTIATE_TEST_CASE_P(

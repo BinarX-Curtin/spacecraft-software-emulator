@@ -20,7 +20,7 @@ constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 constexpr uint32_t kDefaultCommunicationDelay = kWaitForPayloadMaxTime;
 /**> The number of attemps that the emulator can request the Payload Metadata
  * without success*/
-constexpr uint8_t kAllolwedMetadataAttempts = 1;
+constexpr uint8_t kAllolwedMetadataAttempts = 5;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions

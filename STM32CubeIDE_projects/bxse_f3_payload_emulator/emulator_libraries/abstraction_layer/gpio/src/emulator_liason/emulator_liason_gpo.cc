@@ -8,25 +8,24 @@
  *
  */
 
-#include "abstraction_layer/gpio/public/emulator_liason_gpi.h"
+#include "abstraction_layer/gpio/public/emulator_liason_gpo.h"
+
 #include "main.h"
 
 namespace bsf::hal::gpio {
 template <>
-void Gpo<GpiPin::kPayloadChipSelect>::SetHigh() {
-  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
-                    GPIO_PIN_SET);
+void Gpo<GpoPin::kPayloadReady>::SetHigh() {
+  HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET);
 }
 
 template <>
-void Gpo<GpiPin::kPayloadChipSelect>::SetLow() {
-  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
-                    GPIO_PIN_RESET);
+void Gpo<GpoPin::kPayloadReady>::SetLow() {
+  HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET);
 }
 
 template <>
-void Gpo<GpiPin::kPayloadChipSelect>::Toggle() {
-  HAL_GPIO_TogglePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin);
+void Gpo<GpoPin::kPayloadReady>::Toggle() {
+  HAL_GPIO_TogglePin(Data_Ready_GPIO_Port, Data_Ready_Pin);
 }
 
 }  // namespace bsf::hal::gpio

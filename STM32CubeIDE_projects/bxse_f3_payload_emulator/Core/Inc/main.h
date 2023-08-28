@@ -61,10 +61,11 @@ void Error_Handler(void);
 #define MCO_GPIO_Port GPIOF
 #define VCP_TX_Pin GPIO_PIN_2
 #define VCP_TX_GPIO_Port GPIOA
-#define PL_Pin GPIO_PIN_3
-#define PL_GPIO_Port GPIOA
-#define PL_Wait_Pin GPIO_PIN_0
-#define PL_Wait_GPIO_Port GPIOB
+#define Data_Ready_Pin GPIO_PIN_3
+#define Data_Ready_GPIO_Port GPIOA
+#define Payload_Chip_Select_Pin GPIO_PIN_0
+#define Payload_Chip_Select_GPIO_Port GPIOB
+#define Payload_Chip_Select_EXTI_IRQn EXTI0_IRQn
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA
 #define SWCLK_Pin GPIO_PIN_14

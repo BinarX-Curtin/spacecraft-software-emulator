@@ -40,7 +40,7 @@ class EmulatorLiason {
 
   void Transmit(uint8_t* buffer, uint16_t size);
   void ChipSelectInterrupt();
-  void TransmitCallbackInterrupt();
+  void TransmitCallBackInterrupt();
 
  private:
   /**< Reference to the payload comunication implementation*/

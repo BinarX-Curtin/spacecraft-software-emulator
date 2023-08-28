@@ -32,14 +32,11 @@ void BinarXEmulator::Run() {
   if (!button_pressed_) {
     return;
   }
+  BinarXEmulator::RunStartInfo();
 
   // Start the timeout timer by storing the now time
   uint32_t emulator_timeout =
       time_controller_.GetTicks() + kWaitForPayloadMaxTime;
-
-  BinarXEmulator::RunStartInfo();
-
-  time_controller_.Delay(50);
 
   // Turn on payload
   gpo_payload_switch_.SetHigh();
@@ -54,8 +51,8 @@ void BinarXEmulator::Run() {
     }
   }
 
-  // Turn off payload
-  gpo_payload_switch_.SetLow();
+//  // Turn off payload
+//  gpo_payload_switch_.SetLow();
 
   // Reset the emulator states
   button_pressed_ = false;
@@ -77,14 +74,12 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
   // Set chip select High
   gpo_payload_chip_select_.SetHigh();
-
-  time_controller_.Delay(50);
-
   // Receive the metadata
   binarx_serial_interface::SerialStatus serial_status =
       payload_communication_.Receive(packet_buffer.data(),
                                      kNumberOfBytesInHeader,
                                      kDefaultCommunicationDelay);
+
   // check if the header was received correctly and extract the number of
   // packets
   if (packet_buffer[0] != kSyncByte) {
@@ -94,6 +89,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     // Check how many times we attempted to get the metadata
     if (attempt_counter_ <= kAllolwedMetadataAttempts) {
       // Return out to try again
+    	gpo_payload_chip_select_.SetLow();
       return;
     }
 
@@ -170,8 +166,8 @@ void BinarXEmulator::PayloadReadyInterruptCallback() {
 void BinarXEmulator::ButtonPressCallback() {
   button_pressed_ = true;
   // Power off the payload as it was on so it could be flashed.
-  gpo_payload_switch_.SetLow();
-  //  make sure of the status
+//  gpo_payload_switch_.SetLow();
+  //  assert the emulator status
   payload_status_ = PayloadDataStatus::kWaitingForPayload;
 }
 

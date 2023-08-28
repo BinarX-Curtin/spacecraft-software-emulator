@@ -59,6 +59,7 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define Payload_Chip_Select_Pin GPIO_PIN_4
 #define Payload_Chip_Select_GPIO_Port GPIOA
+#define Payload_Chip_Select_EXTI_IRQn EXTI4_15_IRQn
 #define Data_Ready_Pin GPIO_PIN_5
 #define Data_Ready_GPIO_Port GPIOB
 

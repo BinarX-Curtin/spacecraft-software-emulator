@@ -14,7 +14,7 @@
 
 namespace bsf::hal::gpio {
 template <>
-bool Gpi<GpiPin::kPayloadChipSelect>::IsHigh() {
+bool Gpi<GpiPin::kPayloadChipSelect>::IsHigh() const {
   return HAL_GPIO_ReadPin(Payload_Chip_Select_GPIO_Port,
                           Payload_Chip_Select_Pin);
 }

@@ -21,12 +21,11 @@
 
 #include <stdlib.h>
 
-#include "ArduinoJson-v6.21.3.h"
+// #include "external_libraries/ArduinoJson-v6.21.3.h"
+#include "abstraction_layer/gpio/public/emulator_liason_gpi.h"
 #include "abstraction_layer/gpio/public/emulator_liason_gpo.h"
-#include "abstraction_layer/gpio/public/internal/gpo.h"
 #include "abstraction_layer/inc/serial_impl.h"
 #include "emulator_liason/public/emulator_liason.h"
-// #include "json_fwd.hpp"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -60,11 +59,19 @@ binarx_serial_impl::SpiImpl spi_controller = binarx_serial_impl::SpiImpl();
 binarx::emulator_liason::EmulatorLiason emulator_liason =
     binarx::emulator_liason::EmulatorLiason(spi_controller, gpo_payload_ready);
 
-// void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef * hspi)
-//{
-//     waiting_for_transmision=false;
-//     HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_SET);
-// }
+extern "C" void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  switch (GPIO_Pin) {
+    case Payload_Chip_Select_Pin:
+      emulator_liason.ChipSelectInterrupt();
+      break;
+    default:
+      break;
+  }
+}
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+  emulator_liason.TransmitCallBackInterrupt();
+}
 
 /* USER CODE END PV */
 
@@ -114,66 +121,19 @@ int main(void) {
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
-  // Make sure the GPIO is set to low
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+  uint16_t kDataSize =
+          200;
+  std::array<uint8_t, 500> buffer;
+    buffer.fill(255);
 
-  int kMaxDelayTime = 200;  // miliseconds
-  srand((unsigned)HAL_GetTick());
-
-  StaticJsonDocument<1000> doc;
-
-  // Add values in the document
-  doc["sensor"] = "Test";
-  doc["time"] = 0;
-  doc["memory_doc"] = doc.memoryUsage();
-  doc["memory_buffer"] = 0;
-
-  //
-  //
-  int extra_numbers = 10;
-
-  JsonArray data = doc.createNestedArray("data");
-  for (int i = 0; i < extra_numbers; i++) {
-    if (!data.add(doc.memoryUsage())) {
-      data[0] = i;
-      break;
-    }
-  }
-  //
-  uint8_t buffer[500];
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1) {
-    // Wait for the Emulator to be ready.
-    if (HAL_GPIO_ReadPin(PL_Wait_GPIO_Port, PL_Wait_Pin) == GPIO_PIN_SET) {
-      // Test different delays to make sure the emulator can handle it
-      int random_number = rand() % kMaxDelayTime;
-      doc["time"] = random_number;
-      doc["memory_doc"] = doc.memoryUsage();
-      HAL_Delay(random_number);
-
-      // Data size as defined by emulator largest packet size (+ 1 to add the
-      // null terminator byte)
-      uint16_t kDataSize = static_cast<uint16_t>(measureJsonPretty(doc) + 1);
-      // Create a buffer where you will store the data
-
-      doc["memory_buffer"] = kDataSize;
-
-      serializeJsonPretty(doc, (char *)buffer, kDataSize);
-
-      // To transmit the data we need to call this function
-      //	      HAL_StatusTypeDef status = HAL_SPI_Transmit_IT(&hspi1,
-      // buffer, kDataSize);
-
-      emulator_liason.Transmit(buffer, kDataSize);
-      HAL_Delay(10);
-    }
-
     /* USER CODE END WHILE */
-
+	  emulator_liason.Transmit(buffer.data(), kDataSize);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -294,20 +254,24 @@ static void MX_GPIO_Init(void) {
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(PL_GPIO_Port, PL_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PL_Pin */
-  GPIO_InitStruct.Pin = PL_Pin;
+  /*Configure GPIO pin : Data_Ready_Pin */
+  GPIO_InitStruct.Pin = Data_Ready_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(PL_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Data_Ready_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PL_Wait_Pin */
-  GPIO_InitStruct.Pin = PL_Wait_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(PL_Wait_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : Payload_Chip_Select_Pin */
+  GPIO_InitStruct.Pin = Payload_Chip_Select_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(Payload_Chip_Select_GPIO_Port, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
   /* USER CODE END MX_GPIO_Init_2 */

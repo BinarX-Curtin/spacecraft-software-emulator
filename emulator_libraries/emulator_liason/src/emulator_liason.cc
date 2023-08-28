@@ -54,7 +54,7 @@ void EmulatorLiason::ChipSelectInterrupt() {
   }
 }
 
-void EmulatorLiason::TransmitCallbackInterrupt() {
+void EmulatorLiason::TransmitCallBackInterrupt() {
   if (payload_status_ == PayloadDataStatus::kPayloadReadyToTransmit) {
     payload_status_ = PayloadDataStatus::kHeaderSent;
     emulator_communication_.TransmitIt(buffer_data.data(), bytes_to_send);

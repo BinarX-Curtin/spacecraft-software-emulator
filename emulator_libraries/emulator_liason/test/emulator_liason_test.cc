@@ -106,7 +106,7 @@ TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
   // When Payload Comunication is called
   emulator_liason.Transmit(buffer.data(), kDataSize);
   emulator_liason.ChipSelectInterrupt();
-  emulator_liason.TransmitCallbackInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
@@ -149,7 +149,7 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), kDataSize);
   emulator_liason.ChipSelectInterrupt();
-  emulator_liason.TransmitCallbackInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 class EmulatorLiasonParameterizedTestFixture2
@@ -199,7 +199,7 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer_size);
   emulator_liason.ChipSelectInterrupt();
-  emulator_liason.TransmitCallbackInterrupt();
+  emulator_liason.TransmitCallBackInterrupt();
 }
 
 INSTANTIATE_TEST_CASE_P(

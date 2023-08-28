@@ -74,4 +74,21 @@ void Gpo<GpoPin::kPayloadSwitch>::Toggle() {
   HAL_GPIO_TogglePin(Payload_Switch_GPIO_Port, Payload_Switch_Pin);
 }
 
+template <>
+void Gpo<GpoPin::kPayloadChipSelect>::SetHigh() {
+  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
+                    GPIO_PIN_SET);
+}
+
+template <>
+void Gpo<GpoPin::kPayloadChipSelect>::SetLow() {
+  HAL_GPIO_WritePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin,
+                    GPIO_PIN_RESET);
+}
+
+template <>
+void Gpo<GpoPin::kPayloadChipSelect>::Toggle() {
+  HAL_GPIO_TogglePin(Payload_Chip_Select_GPIO_Port, Payload_Chip_Select_Pin);
+}
+
 }  // namespace bsf::hal::gpio
