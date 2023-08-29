@@ -87,7 +87,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     attempt_counter_++;
 
     // Check how many times we attempted to get the metadata
-    if (attempt_counter_ <= kAllolwedMetadataAttempts) {
+    if (attempt_counter_ < kAllolwedMetadataAttempts) {
       // Return out to try again
     	gpo_payload_chip_select_.SetLow();
       return;

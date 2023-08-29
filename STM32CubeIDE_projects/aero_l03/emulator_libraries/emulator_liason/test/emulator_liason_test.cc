@@ -83,28 +83,26 @@ void FillHeader(std::array<uint8_t, SIZE>& buffer, uint16_t data_size) {
 
 TEST_F(EmulatorLiasonTest, SimpleSuccessTest) {
   constexpr uint16_t kDataSize = kPacketLength;
-  std::array<uint8_t, kDataSize> buffer = {0};
+  constexpr uint16_t kBufferSize = kPacketLength + kNumberOfBytesInHeader;
+  std::array<uint8_t, kBufferSize> buffer = {0};
   uint8_t count = 0;
   for (auto& item : buffer) {
     item = count++;
   }
 
-  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
+  FillHeader(buffer, kDataSize);
 
-  FillHeader(header_array, kDataSize);
+  std::array<uint8_t, kDataSize> data_buffer;
+  std::copy(buffer.begin() + kNumberOfBytesInHeader, buffer.end(),
+            data_buffer.begin());
 
   EXPECT_CALL(
       emulator_com_mock,
-      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
-                 kNumberOfBytesInHeader))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  EXPECT_CALL(emulator_com_mock,
-              TransmitIt(ArraysAreEqual(buffer.data(), kDataSize), kDataSize))
+      TransmitIt(ArraysAreEqual(buffer.data(), kBufferSize), kBufferSize))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
-  emulator_liason.Transmit(buffer.data(), kDataSize);
+  emulator_liason.Transmit(data_buffer.data(), data_buffer.size());
   emulator_liason.ChipSelectInterrupt();
   emulator_liason.TransmitCallBackInterrupt();
 }
@@ -132,18 +130,17 @@ TEST_F(EmulatorLiasonTest, SuccessWithJsonLibrary) {
   std::array<uint8_t, 1000> data_buffer;
   serializeJsonPretty(doc, data_buffer.data(), kDataSize);
 
-  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
+  std::array<uint8_t, kMaxPayloadDataLength> buffer;
 
-  FillHeader(header_array, kDataSize);
+  FillHeader(buffer, kDataSize);
+
+  std::copy(data_buffer.begin(), data_buffer.begin() + kDataSize,
+            buffer.begin() + kNumberOfBytesInHeader);
 
   EXPECT_CALL(
       emulator_com_mock,
-      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
-                 kNumberOfBytesInHeader))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  EXPECT_CALL(emulator_com_mock,
-              TransmitIt(ArraysAreEqual(data_buffer.data(), kDataSize), _))
+      TransmitIt(
+          ArraysAreEqual(buffer.data(), kDataSize + kNumberOfBytesInHeader), _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
   // When Payload Comunication is called
@@ -176,26 +173,26 @@ TEST_P(EmulatorLiasonParameterizedTestFixture2,
     data_buffer[i] = static_cast<uint8_t>(i);
   };
 
+  // create a buffer with
+  uint16_t buffer_size =
+      expected_packet_num * kPacketLength + kNumberOfBytesInHeader;
+
+  std::array<uint8_t, kMaxPayloadDataLength + kNumberOfBytesInHeader> buffer;
+  FillHeader(buffer, data_buffer_size);
+
+  for (uint16_t i = 0; i < data_buffer_size; i++) {
+    buffer[i + kNumberOfBytesInHeader] = data_buffer[i];
+  };
+
+  // transmit all this bytes
+  EXPECT_CALL(emulator_com_mock,
+              TransmitIt(ArraysAreEqual(buffer, data_buffer_size), buffer_size))
+      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
+
   // Expect for the GPIO line to be set high
   EXPECT_CALL(gpo_payload_ready_mock, SetHigh()).Times(1);
 
   EXPECT_CALL(gpo_payload_ready_mock, SetLow()).Times(1);
-
-  std::array<uint8_t, kNumberOfBytesInHeader> header_array;
-
-  FillHeader(header_array, data_buffer_size);
-
-  EXPECT_CALL(
-      emulator_com_mock,
-      TransmitIt(ArraysAreEqual(header_array.data(), kNumberOfBytesInHeader),
-                 kNumberOfBytesInHeader))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
-  EXPECT_CALL(emulator_com_mock,
-              TransmitIt(ArraysAreEqual(data_buffer.data(), data_buffer_size),
-                         expected_packet_num * kPacketLength))
-      .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
-
   // When Payload Comunication is called
   emulator_liason.Transmit(data_buffer.data(), data_buffer_size);
   emulator_liason.ChipSelectInterrupt();

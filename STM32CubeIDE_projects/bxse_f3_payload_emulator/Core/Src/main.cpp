@@ -124,7 +124,7 @@ int main(void) {
   uint16_t kDataSize =
           200;
   std::array<uint8_t, 500> buffer;
-    buffer.fill(255);
+    buffer.fill(65);
 
 
   /* USER CODE END 2 */
