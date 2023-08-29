@@ -1,5 +1,5 @@
 /**
- * @file emulator.h
+ * @file emulator_liason.h
  * @author Tristan Ward
  * @brief Binar X Emulator header file
  *
@@ -24,11 +24,11 @@ using namespace binarx::emulator_definitions;
 class EmulatorLiason {
  public:
   /**
-   * @brief Construct a new Binar X Emulator object with dependency injection
+   * @brief Construct a new Emulator Liason object with dependency injection
    *
-   * @param spi_communication Pointer to the SPI implementation object
-   * @param uart_communication Pointer to the UART implementation object
-   * @param gpio_object Pointer to the GPIO implementation object
+   * @param emulator_communication Reference to the serial comunication
+   * implementation
+   * @param gpo_payload_ready Reference to the GPO implementation
    */
   EmulatorLiason(binarx_serial_interface::SerialCommunicationInterface&
                      emulator_communication,
@@ -38,8 +38,26 @@ class EmulatorLiason {
         bytes_to_send(0),
         payload_status_(PayloadDataStatus::kCapturingData){};
 
+  /**
+   * @brief Transmit data to the Emulator
+   *
+   * @param buffer pointer to the C style array with the data to send
+   * @param size of the data to send
+   */
   void Transmit(uint8_t* buffer, uint16_t size);
+
+  /**
+   * @brief ChipSelectInterrupt The function to run when the Chip select
+   * interrupt pin is treggered
+   *
+   */
   void ChipSelectInterrupt();
+
+  /**
+   * @brief TransmitCallBackInterrupt The function to call when the Serial
+   * Transmision has completed
+   *
+   */
   void TransmitCallBackInterrupt();
 
  private:
@@ -51,8 +69,8 @@ class EmulatorLiason {
   /**< Buffer to store the data to send*/
   std::array<uint8_t, kMaxPayloadDataLength + kNumberOfBytesInHeader>
       buffer_data;
-  /**< size of the data plus any bytes extra to get a full packet that must be
-   * sent to the emulator */
+  /**< Size of the data plus any bytes extra to fill all required packets that
+   * must be sent to the emulator */
   uint16_t bytes_to_send;
 
  protected:
@@ -68,7 +86,7 @@ class EmulatorLiason {
   enum class PayloadDataStatus {
     kCapturingData,
     kPayloadReadyToTransmit,
-    kHeaderSent,
+    kChipSelectTriggered,
     kTrasferCompleted,
   };
 

@@ -1,3 +1,10 @@
+/**
+ * @file emulator_liason_test.cc
+ * @author Tristan Ward
+ * @brief The Unit tests for the emulator_liason library
+ *
+ */
+
 #include "emulator_liason/public/emulator_liason.h"
 
 #include <gmock/gmock.h>
