@@ -13,7 +13,7 @@ namespace binarx::emulator_liason {
 
 using namespace emulator_definitions;
 
-void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
+void EmulatorLiason::Transmit(const uint8_t *data, const uint16_t data_size) {
   if (payload_status_ == PayloadDataStatus::kCapturingData) {
     // make sure the pin is low
     gpo_payload_ready_.SetLow();

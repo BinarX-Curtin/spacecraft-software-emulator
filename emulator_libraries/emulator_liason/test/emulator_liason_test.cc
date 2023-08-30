@@ -42,6 +42,11 @@ class GpiMock : public bsf::hal::gpio::GpiInterface {
   MOCK_METHOD(bool, IsHigh, (), (const));
 };
 
+/**
+ * @brief Matcher used to check if two Arrays are eual in the values they store
+ *
+ *
+ */
 MATCHER_P2(ArraysAreEqual, array, size, "") {
   for (uint16_t i = 0; i < size; i++) {
     if (arg[i] != array[i]) {
@@ -53,7 +58,10 @@ MATCHER_P2(ArraysAreEqual, array, size, "") {
   }
   return true;
 }
-
+/**
+ * @brief Mock necesary to mutate protected parameters whithin the Object
+ *
+ */
 class EmulatorLiasonMockTesting
     : public binarx::emulator_liason::EmulatorLiason {
  public:
@@ -64,8 +72,18 @@ class EmulatorLiasonMockTesting
       : binarx::emulator_liason::EmulatorLiason(emulator_communication,
                                                 gpo_payload_ready){};
 
-  void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
-    payload_status_ = value;
+  /**
+   * @brief Allows for the Payload Status of the emulator liason to be mutated
+   * within a Unit Test.
+   *
+   * Allows for the Payload Status of the emulator liason to be mutated within a
+   * Unit Test. This is may used to simulate state changes that are caused by
+   * interrupts
+   *
+   * @param payload_status the new status of the payload
+   */
+  void SetPayloadStatus_TestOnly(PayloadDataStatus payload_status) {
+    payload_status_ = payload_status;
   }
 
   using binarx::emulator_liason::EmulatorLiason::PayloadDataStatus;

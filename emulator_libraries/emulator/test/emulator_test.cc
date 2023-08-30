@@ -70,10 +70,26 @@ class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
             payload_communication, computer_communication, gpo_red_led,
             gpo_yellow_led, gpo_green_led, gpo_payload_switch,
             gpo_payload_chip_select, time_object){};
-
-  void SetPayloadStatus_TestOnly(PayloadDataStatus value) {
-    payload_status_ = value;
+  /**
+   * @brief Allows for the Payload Status of the emulator liason to be mutated
+   * within a Unit Test.
+   *
+   * Allows for the Payload Status of the emulator liason to be mutated within a
+   * Unit Test. This is may used to simulate state changes that are caused by
+   * interrupts
+   *
+   * @param payload_status the new status of the payload
+   */
+  void SetPayloadStatus_TestOnly(PayloadDataStatus payload_status) {
+    payload_status_ = payload_status;
   }
+
+  /**
+   * @brief Allows for the Payload Status of the emulator liason to be mutated
+   * within a Unit Test.
+   *
+   * @param value Bool parameter to set the ButtonPress flag
+   */
   void SetButtonPressed_TestOnly(bool value) { button_pressed_ = value; }
 
   using binarx::emulator::BinarXEmulator::PayloadDataStatus;
@@ -150,6 +166,7 @@ TEST_F(EmulatorTest, Run_DataTransferSuccess) {
   EXPECT_CALL(gpo_payload_chip_select, SetHigh()).Times(1);
   EXPECT_CALL(gpo_payload_chip_select, SetLow()).Times(1);
 
+  // assert the state of the code
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
       EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
@@ -209,6 +226,7 @@ TEST_F(EmulatorTest, EmulatorTimeout) {
       .WillOnce(Return(emulator_before_timeout))
       .WillOnce(Return(emulator_timeout));
 
+  // assert the state of the code
   emulator.SetButtonPressed_TestOnly(true);
   // When
   emulator.Run();
@@ -300,6 +318,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
               Transmit(ArraysAreEqual(data_buffer, data_size), data_size, _))
       .WillOnce(Return(binarx_serial_interface::SerialStatus::Success));
 
+  // assert the state of the code
   emulator.SetButtonPressed_TestOnly(true);
   emulator.SetPayloadStatus_TestOnly(
       EmulatorMockTesting::PayloadDataStatus::kPayloadReady);
@@ -307,7 +326,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
   emulator.Run();
 }
 
-INSTANTIATE_TEST_CASE_P(CorrectPacketNumberTest,
-                        EmulatorParameterizedTestFixture2,
-                        ::testing::Values(1, 50, 250, 500, 600,
+INSTANTIATE_TEST_CASE_P(CorrectDataSizeTest, EmulatorParameterizedTestFixture2,
+                        ::testing::Values(1, 50, kPacketLength,
+                                          2 * kPacketLength, 600,
                                           kMaxPayloadDataLength));

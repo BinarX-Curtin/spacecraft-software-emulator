@@ -3,6 +3,7 @@
  * @author Tristan Ward
  * @brief Binar X Emulator header file
  *
+ *
  */
 
 #pragma once
@@ -25,6 +26,9 @@ constexpr uint8_t kAllolwedMetadataAttempts = 1;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
+ *
+ * The Emulator is intended to act as the binar cubesat as to support the
+ * developement of students projects
  *
  */
 class BinarXEmulator {

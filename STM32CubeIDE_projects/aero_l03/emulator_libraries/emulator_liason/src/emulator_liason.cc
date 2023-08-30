@@ -1,5 +1,5 @@
 /**
- * @file emulator.h
+ * @file emulator_liason.cc
  * @author Tristan Ward
  * @brief Binar X Emulator source file
  *
@@ -7,22 +7,20 @@
 
 #include "emulator_liason/public/emulator_liason.h"
 
-#include <string.h>
-
 #include "emulator_definitions/emulator_definitions.h"
 
 namespace binarx::emulator_liason {
 
 using namespace emulator_definitions;
 
-void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
+void EmulatorLiason::Transmit(const uint8_t *data, const uint16_t data_size) {
   if (payload_status_ == PayloadDataStatus::kCapturingData) {
-    // make sure the pin is lowa
+    // make sure the pin is low
     gpo_payload_ready_.SetLow();
 
     // Calculate number of packets
     uint16_t num_packets = data_size / kPacketLength;
-    // Add an extra packets if the data above has a reminder
+    // Add an extra packets if the division avove has a reminder
     if (data_size % kPacketLength != 0) {
       num_packets++;
     }
@@ -47,7 +45,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
     // set data ready pin high
     gpo_payload_ready_.SetHigh();
   } else if (payload_status_ == PayloadDataStatus::kPayloadReadyToTransmit) {
-    // Trigger another interrupt just incase the emulator missed it
+    // Trigger interrupts just incase the emulator missed it
     gpo_payload_ready_.Toggle();
   } else if (payload_status_ == PayloadDataStatus::kTrasferCompleted) {
     payload_status_ = PayloadDataStatus::kCapturingData;
@@ -55,8 +53,7 @@ void EmulatorLiason::Transmit(uint8_t *data, uint16_t data_size) {
 }
 
 void EmulatorLiason::ChipSelectInterrupt() {
-  // change to chip select
-  payload_status_ = PayloadDataStatus::kHeaderSent;
+  payload_status_ = PayloadDataStatus::kChipSelectTriggered;
 }
 
 void EmulatorLiason::TransmitCallBackInterrupt() {

@@ -1,7 +1,7 @@
 /**
  * @file emulator_liason.h
  * @author Tristan Ward
- * @brief Binar X Emulator header file
+ * @brief Binar X Emulator Liason header file
  *
  */
 
@@ -18,7 +18,7 @@ namespace binarx::emulator_liason {
 using namespace binarx::emulator_definitions;
 
 /**
- * @brief Binar X Emulator to implement the Emulator functions
+ * @brief Binar X Emulator Liason to implement the Emulator Liason functions
  *
  */
 class EmulatorLiason {
@@ -44,7 +44,7 @@ class EmulatorLiason {
    * @param buffer pointer to the C style array with the data to send
    * @param size of the data to send
    */
-  void Transmit(uint8_t* buffer, uint16_t size);
+  void Transmit(const uint8_t* buffer, const uint16_t size);
 
   /**
    * @brief ChipSelectInterrupt The function to run when the Chip select

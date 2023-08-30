@@ -1,3 +1,10 @@
+/**
+ * @file emulator_test.cc
+ * @author Tristan Ward
+ * @brief The Unit tests for the emulator library
+ *
+ */
+
 #include "emulator/public/emulator.h"
 
 #include <gmock/gmock.h>

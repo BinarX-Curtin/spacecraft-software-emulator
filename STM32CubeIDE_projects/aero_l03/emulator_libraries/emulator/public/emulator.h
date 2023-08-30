@@ -3,6 +3,7 @@
  * @author Tristan Ward
  * @brief Binar X Emulator header file
  *
+ *
  */
 
 #pragma once
@@ -14,7 +15,8 @@
 
 namespace binarx::emulator {
 
-/**> The time the Payload is allowed to be on for in milliseconds*/
+/**> The time the Payload is allowed to be on for in milliseconds and the
+ * Emulator timeout*/
 constexpr uint32_t kWaitForPayloadMaxTime = 60 * 1000;
 /**> The time to wait for a communication transaction*/
 constexpr uint32_t kDefaultCommunicationDelay = kWaitForPayloadMaxTime;
@@ -25,15 +27,27 @@ constexpr uint8_t kAllolwedMetadataAttempts = 1;
 /**
  * @brief Binar X Emulator to implement the Emulator functions
  *
+ * The Emulator is intended to act as the binar cubesat as to support the
+ * developement of students projects
+ *
  */
 class BinarXEmulator {
  public:
   /**
    * @brief Construct a new Binar X Emulator object with dependency injection
    *
-   * @param spi_communication Pointer to the SPI implementation object
-   * @param uart_communication Pointer to the UART implementation object
-   * @param gpio_object Pointer to the GPIO implementation object
+   * @param payload_communication Reference to the Payload Serial Comunication
+   * implementation
+   * @param computer_communication Reference to the Computer Serial Comunication
+   * implementation
+   * @param gpo_red_led Reference to the GPO red led implementation
+   * @param gpo_yellow_led Reference to the GPO yellow led implementation
+   * @param gpo_green_led Reference to the GPO green led implementation
+   * @param gpo_payload_switch Reference to the GPO Pyaload power switch
+   * implementation
+   * @param gpo_payload_chip_select Reference to the GPO Payload Chip Select
+   * implementation
+   * @param time_object Reference to the Time Interface implementation
    */
   BinarXEmulator(binarx_serial_interface::SerialCommunicationInterface&
                      payload_communication,
@@ -73,7 +87,7 @@ class BinarXEmulator {
   void Run();
 
   /**
-   * @brief The function the holds what happens when the payload triggers the
+   * @brief The function that holds what happens when the payload triggers the
    * ready interrupt
    *
    */
@@ -112,7 +126,7 @@ class BinarXEmulator {
   void RunStartInfo();
 
   /**
-   * @brief Function that provide information to the user when the emulator
+   * @brief Function that provides information to the user when the emulator
    * stops running
    *
    */
@@ -168,6 +182,12 @@ class BinarXEmulator {
    *
    */
   PayloadDataStatus payload_status_;
+
+  /**
+   * @brief Holds the number of attempts the Emulator has tried to comunicate
+   * with the payload
+   *
+   */
   uint8_t attempt_counter_;
 };
 

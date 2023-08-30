@@ -1,5 +1,5 @@
 /**
- * @file emulator.h
+ * @file emulator.cc
  * @author Tristan Ward
  * @brief Binar X Emulator source file
  *
@@ -34,7 +34,7 @@ void BinarXEmulator::Run() {
   }
   BinarXEmulator::RunStartInfo();
 
-  // Start the timeout timer by storing the now time
+  // Start the timeout timer by storing the curernt number of ticks
   uint32_t emulator_timeout =
       time_controller_.GetTicks() + kWaitForPayloadMaxTime;
 
@@ -61,6 +61,7 @@ void BinarXEmulator::Run() {
   BinarXEmulator::RunEndInfo();
 
   // Turn payload on so it can be flashed by the students
+  // Developement kit only
   gpo_payload_switch_.SetHigh();
 }
 
@@ -82,7 +83,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   // check if the header was received correctly and extract the number of
   // packets
   if (packet_buffer[0] != kSyncByte) {
-    // try again
+    // If not received correctly increment attempt
     attempt_counter_++;
 
     // Check how many times we attempted to get the metadata
@@ -140,7 +141,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     ErrorHandler();
   }
 
-  // Move to the next state as the communication has been completed
+  // Move to the next state as the communication sequence has been completed
   payload_status_ = PayloadDataStatus::kTrasferCompleted;
 
   // Turn off LED
@@ -150,13 +151,14 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 void BinarXEmulator::Init() {
   // turn on Yellow LED
   gpo_yellow_led_.SetHigh();
-  // Power the payload so it can be flashed
-  gpo_payload_switch_.SetHigh();
   // Set chip select to low
   gpo_payload_chip_select_.SetLow();
+  // Power the payload so it can be flashed by students
+  gpo_payload_switch_.SetHigh();
 }
 
 void BinarXEmulator::PayloadReadyInterruptCallback() {
+  // If we were expecting the interrupt, change state
   if (payload_status_ == PayloadDataStatus::kWaitingForPayload) {
     payload_status_ = PayloadDataStatus::kPayloadReady;
   }
@@ -164,13 +166,14 @@ void BinarXEmulator::PayloadReadyInterruptCallback() {
 void BinarXEmulator::ButtonPressCallback() {
   button_pressed_ = true;
   // Power off the payload as it was on so it could be flashed.
+  // Developement kit only code
   gpo_payload_switch_.SetLow();
   //  assert the emulator status
   payload_status_ = PayloadDataStatus::kWaitingForPayload;
 }
 
 void BinarXEmulator::RunStartInfo() {
-  // turn on red LED to communicate with students
+  // turn on green LED to communicate with students
   gpo_green_led_.SetHigh();
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
@@ -190,17 +193,19 @@ void BinarXEmulator::RunEndInfo() {
 }
 
 void BinarXEmulator::ErrorHandler() {
+  // Comunicate the message depending on the state of the Emulator
+
   constexpr char metadata_error_msg[] =
       "ERROR: The number of packets that must be sent by the payload was "
       "not received correctly \r\n";
   constexpr char too_many_packets_error_msg[] =
-      "ERROR: The number of packets is too large and there will not be "
-      "enough space to store the information \r\n";
+      "ERROR: The data size requested to transmit is incorrect. The data "
+      "received is zero or it exceeds the maximun limits of the emulator \r\n";
   constexpr char data_received_error_msg[] =
       "ERROR: Sorry the message was not received correctly by the Binar "
       "Emulator \r\n";
   constexpr char default_error_msg[] =
-      "ERROR: Sorry an error occured with the Binar Emulator \r\n";
+      "ERROR: Sorry an error occured with the transmision of data \r\n";
 
   switch (payload_status_) {
     case PayloadDataStatus::kErrorWithMetadataPacket:
