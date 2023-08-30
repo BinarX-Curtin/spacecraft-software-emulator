@@ -24,11 +24,12 @@ For development and testing, the emulator library was built using Bazel and the 
 
 ## How to download and run the STM32CubeIDE projects
 
-### Common steps for both both projects
+### Common steps for both both Emulator and Payload projects
 1. Download the STM32CubeIDE program to your computer from the st.com website.
     - Link: https://www.st.com/en/development-tools/stm32cubeide.html
 2. Download the BinarX Emulator project from the STM32CubeIDE project folder. The project can be found on the Binar GitHub page.
-    - Tutorial: https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives
+    - GitHub Link: https://github.com/BinarX-Curtin/spacecraft-software-emulator 
+    - Download Tutorial: https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives
 3. Import the BinarX Emulator project to STM32CubeIDE. (Needs testing as it might only work for Linux)
     - Go to the Information Centre page within STM32CubeIDE. The first time you open STM32CubeIDE it should open up with the information center. Otherwise, click on the blue button with an "i" in it. 
     - From the information center, click on "import project"
@@ -44,45 +45,23 @@ This section is intended for users that want to develop their payload and need t
 1. Complete the common steps above to flash the binarx_emulato-h743zi project
 2. If there are no errors, connect the NUCLEO-H743ZIQ to the computer using the USB cable. 
     - Make sure you connect the micro-USB connector to the correct port as there are two.   
-    - The correct one has a label that says "USB PWR". The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
+    - The correct one is on the ST-Link side and has a "USB PWR" label. The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
 3. Flash the code to the microcontroller by pressing the green play button. If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
 4. Once flashed, if all worked as intended, you should see the yellow LED turn on.  
-    - The yellow LED is pretty much in the centre of the board. 
+    - The yellow LED is pretty much in the centre of the board but slightly ofset towards the ST-Link section of the board. 
     - There are more LEDs near the edges of the board that are independent of the emulator
 5. Go to the "How to use section" to continue from here
 
 ### Flash the Payload example 
 
-This section quickly explains how to flash the payload example. The payload example was created for a NUCLEO-F303.  
-1. Complete the common steps above to flash the bxse_f3_payload_emulator project
-2. If there are no errors, connect the NUCLEO-F303 to the computer using the USB cable.
+This section quickly explains how to flash the payload example. The payload example was created for a Binar X Developement Kit.  
+1. Complete the common steps above to flash the XXXXXXX project
+2. If there are no errors, connect the ST-Link to the Payload board and to the computer.
 3. Flash the code to the microcontroller by pressing the green play button. If you get a message with no ST-Link detected, then the cable is probably not connected correctly.  
 4. Go to the "How to use section" to continue from here
 
-## Emulator for developers 
-
-### Emulator Libraries
-The Emulator libraries has been developed in C++ using the Bazel tool and unit tested with the Google Mock library. There are four main folders within the emulator_libraries folder. 
-1. "emulator" is the library intended to mimic the comunicating with the binar flight computer. It also transmits any data received from the payload back to the computer. 
-2. "emulator_liason" is the library used by the student's payload to comunicate apropiatelly with the emulator.
-3. "abstraction_layer" the emulator and emulator_liason require hardware connections to operate correctly. The "abtraction_layer" library abstracts this connections to allow for the librtaries to be tested. 
-4. "external_libraries" the students are intended to use JSON as the data formating structure. A JSON library has already been chosen to test the emulator and it has been provided to support the students. 
-
-#### Running the Tests
-From the emulator_libraries folder you can run "bazel test <target_test>"
-- For emulator_liason: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator_liason/test:emulator_liason_test"
-- For emulator: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator/test:emulator_test"
-
-### Stm32CubeIDE projects
-The emulator_libraries folder has been copied to the Stm32CubeIDE project for the IDE to find and build the software.  The STM32CubeIDE projects have been setup to have look for this library as a relative path whithin the STM32 project.  Therefore, if the code withing the emulator_libraries is updated, one should only have to replace the folder within the project directories. 
-
-Whithin the STM32CubeIDE projects three things require attention.
-1. The IOC file that configures the Nucleo board to have the appropiate SPI and GPIO connections. 
-2. The main.c file was renamed to main.cpp as required to creat C++ project. Annoingly, if you change the IOC file a new main.c. 
-3. Then the main.cpp code was edited to add the required functionality. 
-
 ## How to use the project 
-This sections assumes that you have downloaded and flashed, or uploaded, the code to the microcontrollers as explained above. The simple steps to connect and start using the emulator and payload example are;
+This sections assumes that you have downloaded and flashed (in other words uploaded) the code to the microcontrollers as explained above. The simple steps to connect and start using the emulator and payload example are;
 1. Plug in the Emulator microcontroller to the computer using the USB cable. Warning, there are two micro usb ports on the microcontroller and only one will work correctly. The correct one has a label that says "USB PWR". The incorrect one has the "User USB" label and it is next to the user blue button and the ethernet port.
     - The Emulator is running correctly if the Yellow LED turns on. 
 2. Open the serial terminal of choice. To use the STM32CubeIDE serial terminal you can follow this link.  
@@ -113,6 +92,30 @@ This sections assumes that you have downloaded and flashed, or uploaded, the cod
     - This error is unlikely. If it continues to happen the payload or emulator are not working as intended. Restart both devices and try again.
 5. If the Emulator has timeout
     - Then the payload ready pin did not trigger an interrupt on the emulator
+
+## Emulator for developers 
+
+### Emulator Libraries
+The Emulator libraries has been developed in C++ using the Bazel tool and unit tested with the Google Mock library. There are four main folders within the emulator_libraries folder. 
+1. "emulator" is the library intended to mimic the comunicating with the binar flight computer. It also transmits any data received from the payload back to the computer. 
+2. "emulator_liason" is the library used by the student's payload to comunicate apropiatelly with the emulator.
+3. "abstraction_layer" the emulator and emulator_liason require hardware connections to operate correctly. The "abtraction_layer" library abstracts this connections to allow for the librtaries to be tested. 
+4. "external_libraries" the students are intended to use JSON as the data formating structure. A JSON library has already been chosen to test the emulator and it has been provided to support the students. 
+
+#### Running the Tests
+From the emulator_libraries folder you can run "bazel test <target_test>"
+- For emulator_liason: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator_liason/test:emulator_liason_test"
+- For emulator: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator/test:emulator_test"
+
+### Stm32CubeIDE projects
+The emulator_libraries folder has been copied to the Stm32CubeIDE project for the IDE to find and build the software.  The STM32CubeIDE projects have been setup to look for this library as a relative path whithin the STM32 project.  Therefore, if the code withing the emulator_libraries is updated, one should only have to replace the folder within the project directories. 
+
+Whithin the STM32CubeIDE projects three things require attention.
+1. The IOC file that configures the Nucleo board to have the appropiate SPI and GPIO connections. 
+2. The main.c file was renamed to main.cpp as required to creat a C++ project. Annoingly, if you change the IOC file a new main.c is created. It is usually very similar to the previous main.cpp you were working on, but changes are almost certain.
+3. Then the main.cpp code was edited to add the required functionality. 
+
+
 
 
 
