@@ -25,7 +25,7 @@ void EmulatorLiason::Transmit(const uint8_t *data, const uint16_t data_size) {
       num_packets++;
     }
 
-    // create a buffer with
+    // calculate size of data transfered
     bytes_to_send = num_packets * kPacketLength + kNumberOfBytesInHeader;
 
     // Populate the header

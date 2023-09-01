@@ -48,7 +48,7 @@ class EmulatorLiason {
 
   /**
    * @brief ChipSelectInterrupt The function to run when the Chip select
-   * interrupt pin is treggered
+   * interrupt pin is triggered
    *
    */
   void ChipSelectInterrupt();

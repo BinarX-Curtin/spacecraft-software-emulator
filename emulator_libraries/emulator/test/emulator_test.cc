@@ -241,7 +241,7 @@ class EmulatorParameterizedTestFixture1
 TEST_P(EmulatorParameterizedTestFixture1, DataSizeError) {
   // Given an erroneus data size number
   uint16_t data_size = GetParam();
-  uint16_t kNumOfPaquets = CalculateNumberOfPackets(data_size);
+
   // The emulator should receive the number of packets to the payload has to
   // send
   uint8_t metadata_packet[kNumberOfBytesInHeader] = {
@@ -284,6 +284,7 @@ TEST_P(EmulatorParameterizedTestFixture2, Run_DataTransferSuccess) {
     packet_buffer[i] = static_cast<uint8_t>(i);
   };
 
+  // Create test array
   uint8_t data_buffer[kNumOfPaquets * kPacketLength];
   for (uint16_t i = 0; i < sizeof(data_buffer); i++) {
     data_buffer[i] = packet_buffer[i % kPacketLength];
