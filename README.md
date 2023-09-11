@@ -104,8 +104,10 @@ The Emulator libraries has been developed in C++ using the Bazel tool and unit t
 
 #### Running the Tests
 From the emulator_libraries folder you can run "bazel test <target_test>"
-- For emulator_liason: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator_liason/test:emulator_liason_test"
-- For emulator: "bazel test --cxxopt=-std=c++17 --test_output=all //emulator/test:emulator_test"
+- For emulator_liason: 
+    "bazel test --cxxopt=-std=c++17 --test_output=all //emulator_liason/test:emulator_liason_test"
+- For emulator: 
+    "bazel test --cxxopt=-std=c++17 --test_output=all //emulator/test:emulator_test"
 
 ### Stm32CubeIDE projects
 The emulator_libraries folder has been copied to the Stm32CubeIDE project for the IDE to find and build the software.  The STM32CubeIDE projects have been setup to look for this library as a relative path whithin the STM32 project.  Therefore, if the code withing the emulator_libraries is updated, one should only have to replace the folder within the project directories. 
@@ -113,7 +115,52 @@ The emulator_libraries folder has been copied to the Stm32CubeIDE project for th
 Whithin the STM32CubeIDE projects three things require attention.
 1. The IOC file that configures the Nucleo board to have the appropiate SPI and GPIO connections. 
 2. The main.c file was renamed to main.cpp as required to creat a C++ project. Annoingly, if you change the IOC file a new main.c is created. It is usually very similar to the previous main.cpp you were working on, but changes are almost certain.
-3. Then the main.cpp code was edited to add the required functionality. 
+3. Then the main.cpp code was edited to add the required functionality.
+
+#### Creating a new STM32CubeIDE project
+Follow this brief steps to create a STM32CubeIDE project for a new microcontroller instead of the one listed above. 
+1. Download the STM32CubeIDE program to your computer from the st.com website.
+    - Link: https://www.st.com/en/development-tools/stm32cubeide.html
+2. Create a new STM32 project with your microcontroller. 
+    - Warning, when given the option, make sure you choose C++ as the target language. 
+    - Follow the steps in this link: https://wiki.st.com/stm32mpu/wiki/How_to_get_started_with_STM32CubeIDE_from_scratch#:~:text=To%20start%20a%20new%20project,%5D%3E%5BSTM32%20Project%5D.&text=Select%20the%20desired%20STM32%20device,Click%20on%20%5BNext%20%3E%5D.
+3. Configure the microcontroller peripherals by modifiying the IOC file.
+    - Whithin the project you have just created, there should be a file with the same name as your project that ends with ".ioc". Click on this "Project_name.ioc" file. The IOC file is were we configure the microcontroller.
+    -  After clicking the IOC file a new window appears, on the left hand side we have a list. 
+        1. Click on "Connectivity" then "SPI1" and choose the following configuration.
+            - Mode: Full-Duplex Slave
+            - Hardware NSS Signal: Disable
+            - Frame format: Motorola
+            - Date Size: 8 bits
+            - Firts bit: MSB First
+            - Clock polarity: Low
+            - Clock Phase: 1 Edge
+            - CRC calculation: Disabled
+            - NSS Signal Type: Software
+        2. The SPI pins should appear on the pinout view on the diagram to the right. 
+        3. From the Pinout view diagram on the right, we will modify two pins to configure the "Payload_Chip_Select" and "Data_Ready" pin. This pins correlate to a physical location of the board. Therefore, you may need to check your hardware datasheet to connect the payload to the emulator correctly. 
+            1. Click one of GPIO pins that is not being used (i.e. one of the gpio pins that is grey). A list should appear.
+            2. Choose "GPIO_Output" for this pin
+            3. Click on another GPIO pin that is not being used (i.e. one of the gpio pins that is grey). A list should appear.
+            4. Click on "GPIO_EXTI#". The # character will be a number and this number depends on the pin you have clicked on. 
+        4. Now click on "System Core" then "GPIO" on the list to the left.
+            1. You should see a list with two options that match the two pins you have just selected
+            2. For the GPIO_Output pin we will name it "Data_Ready" within the "User Label" box. The GPIO_Output pin is the one that reads "Output Push Pull" whitin the "GPIO Mode" box. 
+            3. For the GPIO_EXTI pin we will name it "Payload_Chip_Select" within the "User Label" box. The GPIO_EXTI pin is the one that reads "External interrupt Mode with Rising edge trigger selection" whitin the "GPIO Mode" box. Waring, if this GPIO_EXTI reads "External interrupt Mode with" but the last bit is diferent, change this to match by clicking the arrow to the right of the box.
+        5. To finalise the GPIO configuration, click on "System Core" then "NVIC" on the list to the left. We need to enable the EXTI line for the pin you have selected. 
+            1. Find "EXTI line # to # interrupts" where # are numbers from low to high.
+            2. If your GPIO_EXTI# selected previously is within this two numbers, enable this EXTI and choose priority 2. 
+        6. While we are in this NVIC list, there should be an "SPI1 global interrupt" option.
+            - also enable it and set the priority to 2 for the SPI. 
+4. Download the BinarX Emulator project from the STM32CubeIDE project folder. The project can be found on the Binar GitHub page.
+    - GitHub Link: https://github.com/BinarX-Curtin/spacecraft-software-emulator 
+    - Download Tutorial: https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives
+5. Copy the "emulator_libraries" folder into the STM32CubeIDE project.
+    - It should be in the same folder as the "Core" and "Drivers" folders and as the ".ioc" file. 
+6. Build the project and check for errors 
+    - In STM32CubeIDE press the hammer button on the top left corner
+    - Check for errors within the "Console" Window in STM32CubeIDE
+7. If there are no error, you can now follow the "Flash the Payload example" section but for your new project and microcontroller.
 
 
 
