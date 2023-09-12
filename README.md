@@ -137,7 +137,7 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
             - Clock Phase: 1 Edge
             - CRC calculation: Disabled
             - NSS Signal Type: Software
-        2. The SPI pins should appear on the pinout view on the diagram to the right. 
+        2. The SPI pins should now appear on the pinout view on the diagram to the right. 
         3. From the Pinout view diagram on the right, we will modify two pins to configure the "Payload_Chip_Select" and "Data_Ready" pin. This pins correlate to a physical location of the board. Therefore, you may need to check your hardware datasheet to connect the payload to the emulator correctly. 
             1. Click one of GPIO pins that is not being used (i.e. one of the gpio pins that is grey). A list should appear.
             2. Choose "GPIO_Output" for this pin
@@ -157,10 +157,20 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
     - Download Tutorial: https://docs.github.com/en/repositories/working-with-files/using-files/downloading-source-code-archives
 5. Copy the "emulator_libraries" folder into the STM32CubeIDE project.
     - It should be in the same folder as the "Core" and "Drivers" folders and as the ".ioc" file. 
-6. Build the project and check for errors 
+6. Setup the include path and source on your STM32CubeIDE project
+    1. Click on the "Project" tab at the top of the STM32CubeIDE window
+    2. Then "C/C++ Build", "Settings"
+    3. Under "MCU G++ Compiler" click on "Include paths"
+    4. For the "Include paths" subsection you will need to include the "emulator_libraries" folder
+        - Click on the logo with the green plus sign, then workspace, whithin your project, add emulator libraries. 
+    5. For the "Include files" subsection you will need to include all of the source files.
+        - "emulator_libraries/emulator_liason/src/emulator_liason.cc"
+        - "emulator_libraries/abstraction_layer/payload_impl/serial_impl.cc"
+        - "emulator_libraries/abstraction_layer/gpio/src/emulator_liason/emulator_liason_gpo.cc"
+7. Build the project and check for errors 
     - In STM32CubeIDE press the hammer button on the top left corner
     - Check for errors within the "Console" Window in STM32CubeIDE
-7. If there are no error, you can now follow the "Flash the Payload example" section but for your new project and microcontroller.
+8. If there are no error, you can now follow the "Flash the Payload example" section but for your new project and microcontroller.
 
 
 
