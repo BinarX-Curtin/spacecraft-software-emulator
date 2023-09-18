@@ -123,7 +123,7 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
     - Link: https://www.st.com/en/development-tools/stm32cubeide.html
 2. Create a new STM32 project with your microcontroller. 
     - Warning, when given the option, make sure you choose C++ as the target language. 
-    - Follow the steps in this link: https://wiki.st.com/stm32mpu/wiki/How_to_get_started_with_STM32CubeIDE_from_scratch#:~:text=To%20start%20a%20new%20project,%5D%3E%5BSTM32%20Project%5D.&text=Select%20the%20desired%20STM32%20device,Click%20on%20%5BNext%20%3E%5D.
+    - Follow the steps for the first project type in this link: https://wiki.st.com/stm32mpu/wiki/How_to_get_started_with_STM32CubeIDE_from_scratch#:~:text=To%20start%20a%20new%20project,%5D%3E%5BSTM32%20Project%5D.&text=Select%20the%20desired%20STM32%20device,Click%20on%20%5BNext%20%3E%5D.
 3. Configure the microcontroller peripherals by modifiying the IOC file.
     - Whithin the project you have just created, there should be a file with the same name as your project that ends with ".ioc". Click on this "Project_name.ioc" file. The IOC file is were we configure the microcontroller.
     -  After clicking the IOC file a new window appears, on the left hand side we have a list. 
