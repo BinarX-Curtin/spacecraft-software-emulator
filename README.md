@@ -159,11 +159,11 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
     - It should be in the same folder as the "Core" and "Drivers" folders and as the ".ioc" file. 
 6. Setup the include path and source on your STM32CubeIDE project
     1. Click on the "Project" tab at the top of the STM32CubeIDE window
-    2. Then "C/C++ Build", "Settings"
-    3. Under "MCU G++ Compiler" click on "Include paths"
-    4. For the "Include paths" subsection you will need to include the "emulator_libraries" folder
+    3. Then "Properties", then "C/C++ Build", "Settings"
+    4. Under "MCU G++ Compiler" click on "Include paths"
+    5. For the "Include paths" subsection you will need to include the "emulator_libraries" folder
         - Click on the logo with the green plus sign, then workspace, whithin your project, add emulator libraries. 
-    5. For the "Include files" subsection you will need to include all of the source files.
+    6. For the "Include files" subsection you will need to include all of the source files.
         - "emulator_libraries/emulator_liason/src/emulator_liason.cc"
         - "emulator_libraries/abstraction_layer/payload_impl/serial_impl.cc"
         - "emulator_libraries/abstraction_layer/gpio/src/emulator_liason/emulator_liason_gpo.cc"
