@@ -114,7 +114,7 @@ The emulator_libraries folder has been copied to the Stm32CubeIDE project for th
 
 Whithin the STM32CubeIDE projects three things require attention.
 1. The IOC file that configures the Nucleo board to have the appropiate SPI and GPIO connections. 
-2. The main.c file was renamed to main.cpp as required to creat a C++ project. Annoingly, if you change the IOC file a new main.c is created. It is usually very similar to the previous main.cpp you were working on, but changes are almost certain.
+2. The main.c file was renamed to main.cpp as required to create a C++ project. Annoyingly, if you change the IOC file a new main.c is created. It is usually very similar to the previous main.cpp you were working on, but changes are almost certain.
 3. Then the main.cpp code was edited to add the required functionality.
 
 #### Creating a new STM32CubeIDE project
