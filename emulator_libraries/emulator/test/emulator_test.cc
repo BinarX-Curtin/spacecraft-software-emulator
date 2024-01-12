@@ -75,7 +75,7 @@ class EmulatorMockTesting : public binarx::emulator::BinarXEmulator {
    * within a Unit Test.
    *
    * Allows for the Payload Status of the emulator liason to be mutated within a
-   * Unit Test. This is may used to simulate state changes that are caused by
+   * Unit Test. This is used to simulate state changes that are caused by
    * interrupts
    *
    * @param payload_status the new status of the payload

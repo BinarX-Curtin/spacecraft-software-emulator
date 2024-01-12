@@ -148,7 +148,7 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
             2. For the GPIO_Output pin we will name it "Data_Ready" within the "User Label" box. The GPIO_Output pin is the one that reads "Output Push Pull" whitin the "GPIO Mode" box. 
             3. For the GPIO_EXTI pin we will name it "Payload_Chip_Select" within the "User Label" box. The GPIO_EXTI pin is the one that reads "External interrupt Mode with Rising edge trigger selection" whitin the "GPIO Mode" box. Waring, if this GPIO_EXTI reads "External interrupt Mode with" but the last bit is diferent, change this to match by clicking the arrow to the right of the box.
         5. To finalise the GPIO configuration, click on "System Core" then "NVIC" on the list to the left. We need to enable the EXTI line for the pin you have selected. 
-            1. Find "EXTI line # to # interrupts" where # are low to high or high to low.
+            1. Find "EXTI line # to # interrupts" where # are numbers.
             2. If your GPIO_EXTI# selected previously is within this two numbers, enable this EXTI and choose priority 2. 
         6. While we are in this NVIC list, there should be an "SPI1 global interrupt" option.
             - also enable it and set the priority to 2 for the SPI. 
@@ -159,11 +159,11 @@ Follow this brief steps to create a STM32CubeIDE project for a new microcontroll
     - It should be in the same folder as the "Core" and "Drivers" folders and as the ".ioc" file. 
 6. Setup the include path and source on your STM32CubeIDE project
     1. Click on the "Project" tab at the top of the STM32CubeIDE window
-    3. Then "Properties", then "C/C++ Build", "Settings"
-    4. Under "MCU G++ Compiler" click on "Include paths"
-    5. For the "Include paths" subsection you will need to include the "emulator_libraries" folder
+    2. Then "Properties", then "C/C++ Build", "Settings"
+    3. Under "MCU G++ Compiler" click on "Include paths"
+    4. For the "Include paths" subsection you will need to include the "emulator_libraries" folder
         - Click on the logo with the green plus sign, then workspace, whithin your project, add emulator libraries. 
-    6. For the "Include files" subsection you will need to include all of the source files.
+    5. For the "Include files" subsection you will need to include all of the source files.
         - "emulator_libraries/emulator_liason/src/emulator_liason.cc"
         - "emulator_libraries/abstraction_layer/payload_impl/serial_impl.cc"
         - "emulator_libraries/abstraction_layer/gpio/src/emulator_liason/emulator_liason_gpo.cc"
