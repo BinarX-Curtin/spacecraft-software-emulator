@@ -72,6 +72,7 @@ This sections assumes that you have downloaded and flashed (in other words uploa
         - Baud rate should be 115200
         - Data size = 8, Parity = None, Stop bit = 1.
 3. Power on the Payload microcontroller board using the power supply or USB cable
+    - Power supply settings is VBAT. Hence, you may choose 7.4 Volts.  
 4. Wait a second or so for the microntroller to fully switch on
 5. Press the Blue Button on the Emulator microcontroller board
 6. If this steps have succeeded you should see information being printed to the serial terminal. 

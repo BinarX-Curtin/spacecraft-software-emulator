@@ -20,7 +20,7 @@ void EmulatorLiason::Transmit(const uint8_t *data, const uint16_t data_size) {
 
     // Calculate number of packets
     uint16_t num_packets = data_size / kPacketLength;
-    // Add an extra packets if the division avove has a reminder
+    // Add an extra packets if the division above has a reminder
     if (data_size % kPacketLength != 0) {
       num_packets++;
     }
@@ -41,6 +41,8 @@ void EmulatorLiason::Transmit(const uint8_t *data, const uint16_t data_size) {
     }
     payload_status_ = PayloadDataStatus::kPayloadReadyToTransmit;
 
+    // TODO(tristan): ChipSelect does not change the behaviour. move this line
+    // to ChipSelectInterrupt()
     emulator_communication_.TransmitIt(buffer_data.data(), bytes_to_send);
     // set data ready pin high
     gpo_payload_ready_.SetHigh();
