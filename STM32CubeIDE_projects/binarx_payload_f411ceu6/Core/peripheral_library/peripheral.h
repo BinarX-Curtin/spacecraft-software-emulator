@@ -6,21 +6,24 @@
 #include "main.h"
 #include <stdbool.h>
 
-
+#define NUM_BYTE_HEADER 3
+#define MAX_PAYLOAD_DATA_LENGTH 1000
 /**> Max payload data size allowed */
-uint16_t kMaxPayloadDataLength = 1000;
+const uint16_t kMaxPayloadDataLength = 1000;
 /**> Packet Length*/
 uint16_t kPacketLength = 250;
 /**> Synck byte value used to determine if The SPI transmision failed*/
 uint8_t kSyncByte = 5;
 /**< the number of bytes in the payload header*/
-uint8_t kNumberOfBytesInHeader = 3;
+const uint8_t kNumberOfBytesInHeader = 3;
 /**< Size of the data plus any bytes extra to fill all required packets that
    * must be sent to the emulator */
 uint16_t bytes_to_send;
 
 /** Array used to construct message for SPI communication to Controller */
-uint8_t buffer_data[1028];
+uint8_t buffer_data[NUM_BYTE_HEADER+MAX_PAYLOAD_DATA_LENGTH];
+
+bool kTransferComplete;
 
 #endif
 

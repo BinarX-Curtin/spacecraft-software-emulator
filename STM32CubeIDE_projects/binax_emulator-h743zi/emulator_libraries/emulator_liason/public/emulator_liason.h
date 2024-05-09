@@ -48,6 +48,7 @@ class EmulatorLiason {
       emulator_communication_;
   /**< Reference to the GPIO implementation*/
   bsf::hal::gpio::GpoInterface& gpo_payload_ready_;
+  
   std::array<uint8_t, kNumberOfBytesInHeader> buffer_header;
   /**< Buffer to store the data to send*/
   std::array<uint8_t, kMaxPayloadDataLength> buffer_data;

@@ -9,7 +9,7 @@
 
 void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data) {
     // Calculate number of packets
-    uint16_t data_size = sizeof(data);
+    uint16_t data_size = sizeof(data) / sizeof(data[0]);
     uint16_t num_packets = data_size / kPacketLength;
     // Add an extra packets if the division above has a reminder
     if (data_size % kPacketLength != 0) {
@@ -36,10 +36,28 @@ void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data) {
     HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
 }
 
-void ChipSelectInterrupt() {
-  //EMPTY FUNCTION ATM
+void ChipSelectInterrupt(){
 }
 
 void TransmitCallBackInterrupt() {
-  return true;
 }
+
+/*
+void ChipSelectInterrupt(SPI_HandleTypeDef *hspi1, bool kPayloadReadyToTransmit) {
+	if (kPayloadReadyToTransmit) {
+		HAL_SPI_Transmit_IT(hspi1, buffer_header, bytes_to_send);
+	}
+}
+
+bool TransmitCallBackInterrupt(SPI_HandleTypeDef *hspi1, bool kPayloadReadyToTransmit) {
+	if (kPayloadReadyToTransmit) {
+		HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
+		kTransferComplete = true;
+	}
+	else
+	{
+		kTransferComplete = false;
+	}
+	return kTransferComplete;
+}
+*/

@@ -60,15 +60,15 @@ static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial commu
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
     case Payload_Chip_Select_Pin:
-      ChipSelectInterrupt();
-      break;
+    	ChipSelectInterrupt();
+    	break;
     default:
       break;
   }
 }
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-  kTransferCompleted = TransmitCallBackInterrupt();
+  TransmitCallBackInterrupt();
 }
 /* USER CODE END PV */
 
@@ -115,16 +115,16 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-
   int kMaxDelayTime = 200;  // miliseconds
   srand((unsigned)HAL_GetTick());
 
-  uint8_t csv_string[1000] = "Time,0\n";
+  char csv_string[1000] = "Time,0\n";
   strcat(csv_string, "Sensor1,Sensor2,Time\n");
 
-  uint8_t buffer[] = {1,2,3,4};
-  HAL_SPI_Transmit_IT(&hspi1, buffer, sizeof(buffer));
-  HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetHigh();
+
+  //uint8_t buffer[] = {1,2,3,4};
+
+  //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetHigh();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -132,34 +132,33 @@ int main(void)
   while (1)
   {
     // Transfer State Machine
-    if(kCapturingData)
+	if(kCapturingData)
     {
       // To transmit the data we need to call this function
       sprintf(csv_line, "%d,%d,%ld\n", rand(), rand(), HAL_GetTick());
       strcat(csv_string, csv_line);
-      loop++;
+      loop = loop + 1;
       if (loop >= 10)
       {
         kTransmitData = true;
+        kCapturingData = false;
         loop = 0;
       }
     }
     else if (kTransmitData)
     {
       kPayloadReadyToTransmit = true;
+      kTransmitData = false;
       // make sure the pin is low
-      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); // gpo_payload_ready_.SetLow();
-      Transmit(&hspi1, csv_string);
-      kTransferCompleted = true;
-      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetHigh();
+      //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetLow();
+      Transmit(&hspi1, (uint8_t)csv_string);
+      //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); // gpo_payload_ready_.SetHigh();
+      //break;
     }
     else if (kPayloadReadyToTransmit)
     {
       HAL_GPIO_TogglePin(Data_Ready_GPIO_Port, Data_Ready_Pin); // gpo_payload_ready_.Toggle();
-    }
-    else if (kTransferCompleted)
-    {
-      kCapturingData = true;
+      HAL_Delay(2000);
     }
     /* USER CODE END WHILE */
 
