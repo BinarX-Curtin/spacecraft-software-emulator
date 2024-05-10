@@ -46,6 +46,8 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
+uint16_t string_length = 0;
+
 //bool gpo_payload_ready
 //bool gpi_payload_chip_select
 
@@ -118,9 +120,9 @@ int main(void)
   int kMaxDelayTime = 200;  // miliseconds
   srand((unsigned)HAL_GetTick());
 
-  char csv_string[1000] = "Time,0\n";
-  strcat(csv_string, "Sensor1,Sensor2,Time\n");
-
+  uint8_t csv_string[4] = "Test";
+  //strcat(csv_string, "Sensor1,Sensor2,Time\n");
+  //unsigned char csv_string[4] = "Test";
 
   //uint8_t buffer[] = {1,2,3,4};
 
@@ -135,30 +137,33 @@ int main(void)
 	if(kCapturingData)
     {
       // To transmit the data we need to call this function
-      sprintf(csv_line, "%d,%d,%ld\n", rand(), rand(), HAL_GetTick());
-      strcat(csv_string, csv_line);
-      loop = loop + 1;
-      if (loop >= 10)
-      {
+		for(int i = 0; i > 10; i++)
+		{
+			//sprintf(csv_line, "%d,%d,%lu\n", rand(), rand(), HAL_GetTick());
+			//strcat(csv_string, csv_line);
+		}
         kTransmitData = true;
         kCapturingData = false;
         loop = 0;
-      }
     }
     else if (kTransmitData)
     {
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
+
+      string_length = (uint16_t)(sizeof(csv_string) / sizeof(csv_string[0]));
+
       // make sure the pin is low
-      //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetLow();
-      Transmit(&hspi1, (uint8_t)csv_string);
-      //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); // gpo_payload_ready_.SetHigh();
+      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetLow();
+      Transmit(&hspi1, csv_string, string_length);
+      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); // gpo_payload_ready_.SetHigh();
       //break;
     }
     else if (kPayloadReadyToTransmit)
     {
       HAL_GPIO_TogglePin(Data_Ready_GPIO_Port, Data_Ready_Pin); // gpo_payload_ready_.Toggle();
-      HAL_Delay(2000);
+      kTransmitData = true;
+      HAL_Delay(1000);
     }
     /* USER CODE END WHILE */
 

@@ -7,9 +7,9 @@
 
 #include "peripheral.h"
 
-void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data) {
+void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size) {
     // Calculate number of packets
-    uint16_t data_size = sizeof(data) / sizeof(data[0]);
+    //uint16_t data_size = sizeof(data) / sizeof(data[0]);
     uint16_t num_packets = data_size / kPacketLength;
     // Add an extra packets if the division above has a reminder
     if (data_size % kPacketLength != 0) {

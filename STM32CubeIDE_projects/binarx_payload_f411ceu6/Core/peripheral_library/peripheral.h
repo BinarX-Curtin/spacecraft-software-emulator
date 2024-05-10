@@ -11,9 +11,9 @@
 /**> Max payload data size allowed */
 const uint16_t kMaxPayloadDataLength = 1000;
 /**> Packet Length*/
-uint16_t kPacketLength = 250;
+const uint16_t kPacketLength = 250;
 /**> Synck byte value used to determine if The SPI transmision failed*/
-uint8_t kSyncByte = 5;
+const uint8_t kSyncByte = 5;
 /**< the number of bytes in the payload header*/
 const uint8_t kNumberOfBytesInHeader = 3;
 /**< Size of the data plus any bytes extra to fill all required packets that
