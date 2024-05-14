@@ -94,7 +94,6 @@ static void MX_SPI1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int loop = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -117,11 +116,11 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  int kMaxDelayTime = 200;  // miliseconds
-  srand((unsigned)HAL_GetTick());
+  //int kMaxDelayTime = 200;  // miliseconds
+  //srand((unsigned)HAL_GetTick());
 
-  uint8_t csv_string[4] = "Test";
-  //strcat(csv_string, "Sensor1,Sensor2,Time\n");
+  uint8_t csv_string[1000] = "Test\r\n";
+  strcat(csv_string, "Sensor1,Sensor2,Time\r\n");
   //unsigned char csv_string[4] = "Test";
 
   //uint8_t buffer[] = {1,2,3,4};
@@ -137,14 +136,13 @@ int main(void)
 	if(kCapturingData)
     {
       // To transmit the data we need to call this function
-		for(int i = 0; i > 10; i++)
+		for(int i = 0; i < 10; i++)
 		{
-			//sprintf(csv_line, "%d,%d,%lu\n", rand(), rand(), HAL_GetTick());
-			//strcat(csv_string, csv_line);
+			sprintf(csv_line, "%d,%d,%lu\r\n", rand(), rand(), HAL_GetTick());
+			strcat(csv_string, csv_line);
 		}
         kTransmitData = true;
         kCapturingData = false;
-        loop = 0;
     }
     else if (kTransmitData)
     {
