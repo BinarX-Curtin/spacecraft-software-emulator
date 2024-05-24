@@ -21,10 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <string.h> // strlen()
-#include <stdio.h> // sprintf()
-#include <stdbool.h>
-#include <stdint.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,32 +43,15 @@
 SPI_HandleTypeDef hspi1;
 
 /* USER CODE BEGIN PV */
-uint16_t string_length = 0;
-
-//bool gpo_payload_ready
-//bool gpi_payload_chip_select
-
+int kDelayTime = 100;  // milliseconds (1/time (s) = frequency (Hz))
 // STATE MACHINE INITIAL CONDITIONS
-bool kTransmitData = false;
-bool kCapturingData = true;
-bool kPayloadReadyToTransmit = false;
-bool kTransferCompleted = false;
-
+bool kCapturingData = true; // Capture payload data and process it
+bool kTransmitData = false; // Transmit payload (peripheral) data to the Emulator (controller)
+bool kPayloadReadyToTransmit = false; // Wait for the Emulator (controller) to receive the data
+// DATA ARRAY BUILDER
+uint8_t data[1000]; // Data array
 static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial communication
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-  switch (GPIO_Pin) {
-    case Payload_Chip_Select_Pin:
-    	ChipSelectInterrupt();
-    	break;
-    default:
-      break;
-  }
-}
-
-void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
-  TransmitCallBackInterrupt();
-}
+uint16_t data_length = 0; 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,7 +64,21 @@ static void MX_SPI1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+// INTERRUPT FUNCTIONS
+// SPI Chip Select (CS) Interrupt 
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
+  switch (GPIO_Pin) {
+    case Payload_Chip_Select_Pin:
+    	ChipSelectInterrupt();
+    	break;
+    default:
+      break;
+  }
+}
+// SPI Communication Interrupt
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
+  TransmitCallBackInterrupt();
+}
 /* USER CODE END 0 */
 
 /**
@@ -94,21 +88,19 @@ static void MX_SPI1_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int loop = 0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -117,53 +109,49 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
-  int kMaxDelayTime = 200;  // miliseconds
-  srand((unsigned)HAL_GetTick());
 
-  uint8_t csv_string[4] = "Test";
-  //strcat(csv_string, "Sensor1,Sensor2,Time\n");
-  //unsigned char csv_string[4] = "Test";
-
-  //uint8_t buffer[] = {1,2,3,4};
-
-  //HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetHigh();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // Transfer State Machine
-	if(kCapturingData)
+	  if(kCapturingData)
     {
-      // To transmit the data we need to call this function
-		for(int i = 0; i > 10; i++)
-		{
-			//sprintf(csv_line, "%d,%d,%lu\n", rand(), rand(), HAL_GetTick());
-			//strcat(csv_string, csv_line);
-		}
-        kTransmitData = true;
-        kCapturingData = false;
-        loop = 0;
+      // Build test data
+	    memset(data, '\0', sizeof(data));
+      strcat(data, "Test Data\r\n");
+      strcat(data, "Sensor1,Sensor2,Time\r\n");
+      for(int i = 0; i < 10; i++)
+      {
+        sprintf(csv_line, "%d,%d,%lu\r\n", rand(), rand(), HAL_GetTick());
+        strcat(data, csv_line);
+      }
+      // Set the state machine to transmit the data to the Emulator (controller) 
+      kTransmitData = true;
+      kCapturingData = false;
     }
     else if (kTransmitData)
     {
+      // Set the state machine to delay for Emulator (controller) to receive the data
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
-
-      string_length = (uint16_t)(sizeof(csv_string) / sizeof(csv_string[0]));
-
-      // make sure the pin is low
-      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); // gpo_payload_ready_.SetLow();
-      Transmit(&hspi1, csv_string, string_length);
-      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); // gpo_payload_ready_.SetHigh();
-      //break;
+      // Calculate the data length based on the data types
+      data_length = (uint16_t)(sizeof(data) / sizeof(data[0]));
+      // Set DATA_READY high to signal to the Emulator (controller) to receive payload data
+      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_SET); 
+      // Transmit data string to Emulator (controller) using SPI
+      Transmit(&hspi1, data, data_length);
+      // Set DATA_READY low after transmitting data
+      HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET); 
     }
     else if (kPayloadReadyToTransmit)
     {
-      HAL_GPIO_TogglePin(Data_Ready_GPIO_Port, Data_Ready_Pin); // gpo_payload_ready_.Toggle();
-      kTransmitData = true;
-      HAL_Delay(1000);
+      // Set the state machine to capture data
+      kCapturingData = true;
+      kPayloadReadyToTransmit = false;
+      // Set the state machine frequency based on kDelayTime
+      HAL_Delay(kDelayTime);
     }
     /* USER CODE END WHILE */
 

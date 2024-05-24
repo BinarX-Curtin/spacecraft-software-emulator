@@ -31,7 +31,10 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h> // Include the String data type
+#include <stdio.h> // sprintf()
+#include <stdbool.h> // Include the String data type
+#include <stdint.h> // Include the uint data types (uint8_t)
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
