@@ -118,7 +118,7 @@ int main(void)
   {
 	  if(kCapturingData)
     {
-      // Build test data
+      // Build test data array
 	    memset(data, '\0', sizeof(data));
       strcat(data, "Test Data\r\n");
       strcat(data, "Sensor1,Sensor2,Time\r\n");
