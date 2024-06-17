@@ -41,12 +41,19 @@ void BinarXEmulator::Run() {
   // Turn on payload
   gpo_payload_switch_.SetHigh();
 
-  // Wait for payload data transfer or until timeout
-  while (emulator_timeout > time_controller_.GetTicks() &&
-         payload_status_ != PayloadDataStatus::kTrasferCompleted) {
-    // Check if the payload ready interrupt has been trigered
-    if (payload_status_ == PayloadDataStatus::kPayloadReady) {
-      // Run the communication script
+  // Calculate when the payload should stop running in ticks
+  uint32_t payload_total_runtime = time_controller_.GetTicks() + kPayloadTotalRuntime;
+  // Calculate when the payload should send it's data to the emulator
+  uint32_t payload_communication_runtime = time_controller_.GetTicks() + kPayloadCommunicationRuntime;
+
+  // Wait for payload to run it's full scheduled cycle
+  while(payload_total_runtime > time_controller_.GetTicks() && 
+          payload_status_ != PayloadDataStatus::kTransferCompleted)
+  {
+    // Check if the payload data collection time has elapsed
+    if(payload_communication_runtime < time_controller_.GetTicks())
+    {
+      // Run the communication function
       PayloadCommunicationHandler();
     }
   }
@@ -73,7 +80,7 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   std::array<uint8_t, kPacketLength> packet_buffer = {0};
 
   // Set chip select High
-  gpo_payload_chip_select_.SetHigh();
+  gpo_payload_chip_select_.SetLow();
   // Receive the metadata
   binarx_serial_interface::SerialStatus serial_status =
       payload_communication_.Receive(packet_buffer.data(),
@@ -87,9 +94,9 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     attempt_counter_++;
 
     // Check how many times we attempted to get the metadata
-    if (attempt_counter_ < kAllolwedMetadataAttempts) {
+    if (attempt_counter_ < kAllowedMetadataAttempts) {
       // Return out to try again
-    	gpo_payload_chip_select_.SetLow();
+    	gpo_payload_chip_select_.SetHigh();
       return;
     }
 
@@ -97,25 +104,32 @@ void BinarXEmulator::PayloadCommunicationHandler() {
     payload_status_ = PayloadDataStatus::kErrorWithMetadataPacket;
   }
 
-  // reset counter as the Synkbyte was received or because we tried too many
-  // times and error mesage will be sent
+  // reset counter as the sync byte was received or because we tried too many
+  // times and error message will be sent
   attempt_counter_ = 0;
 
-  if (payload_status_ == PayloadDataStatus::kPayloadReady) {
+  //if (payload_status_ == PayloadDataStatus::kPayloadReady) 
+  if(payload_status_ != PayloadDataStatus::kErrorWithMetadataPacket)
+  {
     const uint16_t kDataSize =
         ((uint16_t)packet_buffer[1] << 8) | packet_buffer[2];
     uint16_t num_of_packets = CalculateNumberOfPackets(kDataSize);
-    if (kDataSize > kMaxPayloadDataLength || kDataSize == 0) {
+    if (kDataSize > kMaxPayloadDataLength || kDataSize == 0) 
+    {
       // Error
       payload_status_ = PayloadDataStatus::kErrorDataSize;
-    } else {
+    } 
+    else 
+    {
       std::array<uint8_t, kMaxPayloadDataLength> data_buffer = {0};
-      for (uint8_t i = 0; i < num_of_packets; i++) {
+      for (uint8_t i = 0; i < num_of_packets; i++) 
+      {
         serial_status = payload_communication_.Receive(
             packet_buffer.data(), kPacketLength, kDefaultCommunicationDelay);
         // Break if any of the transactions fail
-        if (serial_status != binarx_serial_interface::SerialStatus::Success) {
-          payload_status_ = PayloadDataStatus::kFaiulureToReceiveAllPackets;
+        if (serial_status != binarx_serial_interface::SerialStatus::Success) 
+        {
+          payload_status_ = PayloadDataStatus::kFailureToReceiveAllPackets;
           break;
         }
         uint16_t location_start_for_packet = i * kPacketLength;
@@ -123,30 +137,30 @@ void BinarXEmulator::PayloadCommunicationHandler() {
         std::copy(packet_buffer.begin(), packet_buffer.end(),
                   data_buffer.begin() + location_start_for_packet);
       }
-
-      // Set chip select High
-      gpo_payload_chip_select_.SetLow();
+      gpo_payload_chip_select_.SetHigh();
 
       // Check the status of the SPI transaction
-      if (payload_status_ == PayloadDataStatus::kPayloadReady) {
-        // Send the data over UART if SPI data was received succesfully
+      if (payload_status_ != PayloadDataStatus::kFailureToReceiveAllPackets) {
+        // Send the data over UART if SPI data was received successfully
         computer_communication_.Transmit(data_buffer.data(), kDataSize,
-                                         kDefaultCommunicationDelay);
-        payload_status_ = PayloadDataStatus::kDataReceivedSuccesfully;
+                                          kDefaultCommunicationDelay);
+        payload_status_ = PayloadDataStatus::kDataReceivedSuccessfully;
       }
     }
   }
 
   // If the transaction did not succeed then we need to handle the error
-  if (payload_status_ != PayloadDataStatus::kDataReceivedSuccesfully) {
+  if (payload_status_ != PayloadDataStatus::kDataReceivedSuccessfully) {
     ErrorHandler();
   }
 
   // Move to the next state as the communication has been completed
-  payload_status_ = PayloadDataStatus::kTrasferCompleted;
+  payload_status_ = PayloadDataStatus::kTransferCompleted;
 
   // Turn off LED
   gpo_red_led_.SetLow();
+  //Comms ended turn chip select back to high
+  gpo_payload_chip_select_.SetHigh();
 }
 
 void BinarXEmulator::Init() {
@@ -155,7 +169,7 @@ void BinarXEmulator::Init() {
   // Power the payload so it can be flashed
   gpo_payload_switch_.SetHigh();
   // Set chip select to low
-  gpo_payload_chip_select_.SetLow();
+  gpo_payload_chip_select_.SetHigh();
 }
 
 void BinarXEmulator::PayloadReadyInterruptCallback() {
@@ -215,7 +229,7 @@ void BinarXEmulator::ErrorHandler() {
                                        strlen(too_many_packets_error_msg),
                                        kDefaultCommunicationDelay);
       break;
-    case PayloadDataStatus::kFaiulureToReceiveAllPackets:
+    case PayloadDataStatus::kFailureToReceiveAllPackets:
       computer_communication_.Transmit((uint8_t *)data_received_error_msg,
                                        strlen(data_received_error_msg),
                                        kDefaultCommunicationDelay);

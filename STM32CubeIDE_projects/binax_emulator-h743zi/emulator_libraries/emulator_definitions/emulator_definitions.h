@@ -12,7 +12,7 @@
 #pragma once
 namespace binarx::emulator_definitions {
 /**> Max payload data size allowed */
-constexpr uint16_t kMaxPayloadDataLength = 1000;
+constexpr uint16_t kMaxPayloadDataLength = 50000;
 /**> Packet Length*/
 constexpr uint16_t kPacketLength = 250;
 /**> Synck byte value used to determine if The SPI transmision failed*/

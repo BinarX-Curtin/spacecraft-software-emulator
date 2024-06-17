@@ -33,22 +33,20 @@ void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size) {
 
     // TODO(tristan): ChipSelect does not change the behaviour. move this line
     // to ChipSelectInterrupt()
-    HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
-}
-
-void ChipSelectInterrupt(){
+    
 }
 
 void TransmitCallBackInterrupt() {
 }
 
-/*
+
 void ChipSelectInterrupt(SPI_HandleTypeDef *hspi1, bool kPayloadReadyToTransmit) {
 	if (kPayloadReadyToTransmit) {
-		HAL_SPI_Transmit_IT(hspi1, buffer_header, bytes_to_send);
+		HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
 	}
 }
 
+/*
 bool TransmitCallBackInterrupt(SPI_HandleTypeDef *hspi1, bool kPayloadReadyToTransmit) {
 	if (kPayloadReadyToTransmit) {
 		HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
