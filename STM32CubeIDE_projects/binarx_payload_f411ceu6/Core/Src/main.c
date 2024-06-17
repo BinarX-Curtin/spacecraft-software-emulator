@@ -126,7 +126,7 @@ int main(void)
     if(kCapturingData)
     {
       // Build test data array
-      for(int i = 0; i < 385; i++){
+      for(int i = 0; i < 1000; i++){
         sprintf(csv_line, "%d,%d,%lu\r\n", rand(), rand(), HAL_GetTick());
         strcat(data, csv_line);
       }
@@ -142,7 +142,6 @@ int main(void)
           data_length++;
         }
       }
-      data_length = (uint16_t)(sizeof(data) / sizeof(data[0]));
 
       // Transmit data string to Emulator (controller) using SPI
       Transmit(&hspi1, data, data_length);

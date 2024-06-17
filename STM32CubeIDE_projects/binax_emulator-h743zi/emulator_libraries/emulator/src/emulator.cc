@@ -32,6 +32,14 @@ void BinarXEmulator::Run() {
   if (!button_pressed_) {
     return;
   }
+  // Turn on payload
+  gpo_payload_switch_.SetLow();
+  // Yellow LED show's that Payload is Powered
+  gpo_yellow_led_.SetLow();
+  // Delay to let Payload capacitors discharge
+  uint32_t delay = time_controller_.GetTicks() + 3000;
+  while(time_controller_.GetTicks() < delay){}
+  
   BinarXEmulator::RunStartInfo();
 
   // Start the timeout timer by storing the now time
@@ -40,11 +48,16 @@ void BinarXEmulator::Run() {
 
   // Turn on payload
   gpo_payload_switch_.SetHigh();
+  // Yellow LED show's that Payload is Powered
+  gpo_yellow_led_.SetHigh();
 
   // Calculate when the payload should stop running in ticks
   uint32_t payload_total_runtime = time_controller_.GetTicks() + kPayloadTotalRuntime;
   // Calculate when the payload should send it's data to the emulator
   uint32_t payload_communication_runtime = time_controller_.GetTicks() + kPayloadCommunicationRuntime;
+
+  // turn on green LED to show emulator is in scheduled cycle
+  gpo_green_led_.SetHigh();
 
   // Wait for payload to run it's full scheduled cycle
   while(payload_total_runtime > time_controller_.GetTicks() && 
@@ -72,10 +85,6 @@ void BinarXEmulator::Run() {
 }
 
 void BinarXEmulator::PayloadCommunicationHandler() {
-  // Turn on the red LED to inform that the payload ready interrupt was
-  // received
-  gpo_red_led_.SetHigh();
-
   // create the packet buffer
   std::array<uint8_t, kPacketLength> packet_buffer = {0};
 
@@ -138,6 +147,9 @@ void BinarXEmulator::PayloadCommunicationHandler() {
                   data_buffer.begin() + location_start_for_packet);
       }
       gpo_payload_chip_select_.SetHigh();
+      // Turn on the red LED to inform that the payload information was
+      // received
+      gpo_red_led_.SetHigh();
 
       // Check the status of the SPI transaction
       if (payload_status_ != PayloadDataStatus::kFailureToReceiveAllPackets) {
@@ -186,18 +198,17 @@ void BinarXEmulator::ButtonPressCallback() {
 }
 
 void BinarXEmulator::RunStartInfo() {
-  // turn on red LED to communicate with students
-  gpo_green_led_.SetHigh();
   // Print a message to the Serial Monitor to inform the students
   uint8_t info_msg[] =
-      "\r\nINFO: Button pressed and waiting for SPI transmission \r\n";
+      "\r\nINFO: Button pressed turning payload on"
+      " and waiting for SPI transmission \r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 }
 
 void BinarXEmulator::RunEndInfo() {
   // Print a message to the Serial Monitor to inform the students
-  uint8_t info_msg[] = "\r\nINFO: Turning payload off\r\n";
+  uint8_t info_msg[] = "\r\nINFO: Payload scheduled operation completed\r\n";
   computer_communication_.Transmit(info_msg, sizeof(info_msg),
                                    kDefaultCommunicationDelay);
 
@@ -216,7 +227,7 @@ void BinarXEmulator::ErrorHandler() {
       "ERROR: Sorry the message was not received correctly by the Binar "
       "Emulator \r\n";
   constexpr char default_error_msg[] =
-      "ERROR: Sorry an error occured with the Binar Emulator \r\n";
+      "ERROR: Sorry an error occurred with the Binar Emulator \r\n";
 
   switch (payload_status_) {
     case PayloadDataStatus::kErrorWithMetadataPacket:

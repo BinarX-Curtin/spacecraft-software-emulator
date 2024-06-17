@@ -23,9 +23,9 @@ constexpr uint32_t kDefaultCommunicationDelay = kWaitForPayloadMaxTime;
 constexpr uint8_t kAllowedMetadataAttempts = 5;
 
 /**> The time the Payload is allowed to be on for in milliseconds*/
-constexpr uint32_t kPayloadTotalRuntime = 3 * 1000;
+constexpr uint32_t kPayloadTotalRuntime = 30 * 1000;
 /**> The time the Payload is to be interrupted in milliseconds*/
-constexpr uint32_t kPayloadCommunicationRuntime = 1 * 1000;
+constexpr uint32_t kPayloadCommunicationRuntime = 15 * 1000;
 
 /**
  * @brief Binar X Emulator to implement the Emulator functions
