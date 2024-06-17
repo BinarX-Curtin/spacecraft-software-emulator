@@ -42,10 +42,6 @@ void BinarXEmulator::Run() {
   
   BinarXEmulator::RunStartInfo();
 
-  // Start the timeout timer by storing the now time
-  uint32_t emulator_timeout =
-      time_controller_.GetTicks() + kWaitForPayloadMaxTime;
-
   // Turn on payload
   gpo_payload_switch_.SetHigh();
   // Yellow LED show's that Payload is Powered

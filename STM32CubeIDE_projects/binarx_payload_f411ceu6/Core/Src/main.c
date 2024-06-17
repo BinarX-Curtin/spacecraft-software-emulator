@@ -71,7 +71,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
     case Payload_Chip_Select_Pin:
     	ChipSelectInterrupt(&hspi1, kPayloadReadyToTransmit);
-    	//kTransmitData = true;
     	break;
     default:
       break;
@@ -90,8 +89,9 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  //Setup data with headings
+  // ensure all data memory is empty
   memset(data, '\0', sizeof(data));
+  //Setup data array with title and headings
   strcat(data, "Test Data\r\n");
   strcat(data, "Sensor1,Sensor2,Time\r\n");
   /* USER CODE END 1 */
@@ -123,36 +123,38 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // State machine
     if(kCapturingData)
     {
       // Build test data array
       for(int i = 0; i < 1000; i++){
+        // sprintf <- writes a string to a string (csv_line <- "%d,%d,%lu")
         sprintf(csv_line, "%d,%d,%lu\r\n", rand(), rand(), HAL_GetTick());
+        // strcat appends a string to the end of the line
         strcat(data, csv_line);
       }
-      
+      // Change state
       kTransmitData = true;
       kCapturingData = false;
     }
 	  else if (kTransmitData)
     {  
+      // Count the amount of bytes in the data array
       for(int i = 0; i < (sizeof(data)/sizeof(data[0])); i++){
         if(data[i] != '\0')
         {
           data_length++;
         }
       }
-
-      // Transmit data string to Emulator (controller) using SPI
+      // Prepare metadata and data array using SPI
       Transmit(&hspi1, data, data_length);
+      // Change state
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
     }
     else if (kPayloadReadyToTransmit)
     {
-      // Set the state machine to capture data
-      // Set the state machine frequency based on kDelayTime
-      //HAL_Delay(kDelayTime);
+      // Wait for emulator to receive data
     }
     /* USER CODE END WHILE */
 
