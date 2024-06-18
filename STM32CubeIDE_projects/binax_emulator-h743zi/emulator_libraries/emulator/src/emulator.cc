@@ -214,10 +214,10 @@ void BinarXEmulator::RunEndInfo() {
 
 void BinarXEmulator::ErrorHandler() {
   constexpr char metadata_error_msg[] =
-      "ERROR: The number of packets that must be sent by the payload was "
+      "ERROR: The packets of metadata that must be sent by the payload was "
       "not received correctly \r\n";
   constexpr char too_many_packets_error_msg[] =
-      "ERROR: The number of packets is too large and there will not be "
+      "ERROR: The number of data packets is too large and there will not be "
       "enough space to store the information \r\n";
   constexpr char data_received_error_msg[] =
       "ERROR: Sorry the message was not received correctly by the Binar "

@@ -127,7 +127,7 @@ int main(void)
     if(kCapturingData)
     {
       // Build test data array
-      for(int i = 0; i < 1000; i++){
+      for(int i = 0; i < 100; i++){
         // sprintf <- writes a string to a string (csv_line <- "%d,%d,%lu")
         sprintf(csv_line, "%d,%d,%lu\r\n", rand(), rand(), HAL_GetTick());
         // strcat appends a string to the end of the line
