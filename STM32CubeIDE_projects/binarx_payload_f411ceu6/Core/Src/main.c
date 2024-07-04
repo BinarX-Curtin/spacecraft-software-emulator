@@ -49,7 +49,8 @@ bool kCapturingData = true; // Capture payload data and process it
 bool kTransmitData = false; // Transmit payload (peripheral) data to the Emulator (controller)
 bool kPayloadReadyToTransmit = false; // Wait for the Emulator (controller) to receive the data
 // DATA ARRAY BUILDER
-uint8_t data[50000]; // Data array
+// There is a maximum data array size determined by the F4's RAM
+uint8_t data[50000]; // Data array (unsigned 8-bit integers * 50,000 = 400,000 bits)
 
 static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial communication
 uint16_t data_length = 0; 
@@ -88,6 +89,7 @@ void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi) {
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
   // ensure all data memory is empty
   memset(data, '\0', sizeof(data));
@@ -256,14 +258,14 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(Data_Ready_GPIO_Port, Data_Ready_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : Data_Ready_Pin */
-  GPIO_InitStruct.Pin = Data_Ready_Pin;
+  /*Configure GPIO pin : PA1 */
+  GPIO_InitStruct.Pin = GPIO_PIN_1;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(Data_Ready_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : Payload_Chip_Select_Pin */
   GPIO_InitStruct.Pin = Payload_Chip_Select_Pin;

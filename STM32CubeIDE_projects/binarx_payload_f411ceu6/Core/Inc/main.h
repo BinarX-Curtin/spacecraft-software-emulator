@@ -60,8 +60,6 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define Data_Ready_Pin GPIO_PIN_1
-#define Data_Ready_GPIO_Port GPIOA
 #define Payload_Chip_Select_Pin GPIO_PIN_4
 #define Payload_Chip_Select_GPIO_Port GPIOA
 #define Payload_Chip_Select_EXTI_IRQn EXTI4_IRQn
