@@ -135,7 +135,7 @@ int main(void)
         // strcat appends a string to the end of the line
         strcat(data, csv_line);
       }
-      // Change state
+      // Change state to kTransmitData
       kTransmitData = true;
       kCapturingData = false;
     }
@@ -148,9 +148,9 @@ int main(void)
           data_length++;
         }
       }
-      // Prepare metadata and data array using SPI
+      // Prepare metadata and data array
       Transmit(&hspi1, data, data_length);
-      // Change state
+      // Change state to kPayloadReadyToTransmit
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
     }
