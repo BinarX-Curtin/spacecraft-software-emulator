@@ -126,8 +126,7 @@ int main(void)
   while (1)
   {
     // State machine
-    if(kCapturingData)
-    {
+    if(kCapturingData){
       // Build test data array
       for(int i = 0; i < 100; i++){
         // sprintf <- writes a string to a string (csv_line <- "%d,%d,%lu")
@@ -139,12 +138,10 @@ int main(void)
       kTransmitData = true;
       kCapturingData = false;
     }
-	  else if (kTransmitData)
-    {  
+	else if (kTransmitData){
       // Count the amount of bytes in the data array
       for(int i = 0; i < (sizeof(data)/sizeof(data[0])); i++){
-        if(data[i] != '\0')
-        {
+        if(data[i] != '\0'){
           data_length++;
         }
       }
@@ -154,8 +151,7 @@ int main(void)
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
     }
-    else if (kPayloadReadyToTransmit)
-    {
+    else if (kPayloadReadyToTransmit){
       // Wait for emulator to receive data
     }
     /* USER CODE END WHILE */
