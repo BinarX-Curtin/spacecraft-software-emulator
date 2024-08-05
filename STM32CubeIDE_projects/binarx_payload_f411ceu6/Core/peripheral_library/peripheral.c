@@ -7,7 +7,7 @@
 
 #include "peripheral.h"
 
-void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size) {
+void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size, UART_HandleTypeDef *huart6) {
     // Calculate number of packets
     //uint16_t data_size = sizeof(data) / sizeof(data[0]);
     uint16_t num_packets = data_size / kPacketLength;
@@ -30,6 +30,8 @@ void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size) {
         buffer_data[i + kNumberOfBytesInHeader] = data[i];
       }
     }
+
+    HAL_UART_Transmit(huart6, buffer_data, sizeof(buffer_data), 1000);
 
     // TODO(tristan): ChipSelect does not change the behaviour. move this line
     // to ChipSelectInterrupt()

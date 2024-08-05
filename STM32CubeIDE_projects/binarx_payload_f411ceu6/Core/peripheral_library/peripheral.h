@@ -30,7 +30,7 @@ bool kTransferComplete;
 * to the emulator
 *
 */
-void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size);
+void Transmit(SPI_HandleTypeDef *hspi1, uint8_t *data, uint16_t data_size, UART_HandleTypeDef *huart6);
 
 /**
 * @brief Function that sends the data from the payload to the emulator

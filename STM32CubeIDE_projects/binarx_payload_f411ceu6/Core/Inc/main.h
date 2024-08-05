@@ -63,6 +63,16 @@ void Error_Handler(void);
 #define Payload_Chip_Select_Pin GPIO_PIN_4
 #define Payload_Chip_Select_GPIO_Port GPIOA
 #define Payload_Chip_Select_EXTI_IRQn EXTI4_IRQn
+#define SENSOR_GPIO_1_Pin GPIO_PIN_10
+#define SENSOR_GPIO_1_GPIO_Port GPIOB
+#define DEBUG_USART_TX_Pin GPIO_PIN_11
+#define DEBUG_USART_TX_GPIO_Port GPIOA
+#define DEBUG_USART_RX_Pin GPIO_PIN_12
+#define DEBUG_USART_RX_GPIO_Port GPIOA
+#define SENSOR_GPIO_2_Pin GPIO_PIN_5
+#define SENSOR_GPIO_2_GPIO_Port GPIOB
+#define SENSOR_GPIO_3_Pin GPIO_PIN_7
+#define SENSOR_GPIO_3_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
