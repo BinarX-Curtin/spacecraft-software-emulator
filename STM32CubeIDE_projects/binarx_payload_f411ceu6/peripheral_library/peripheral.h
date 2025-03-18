@@ -1,9 +1,10 @@
+
 #ifndef HEADER_FILE
 #define HEADER_FILE
 
 #include <stdint.h>
 #include "stm32f4xx_hal.h"
-#include "main.h"
+//#include "main.h"
 #include <stdbool.h>
 
 #define NUM_BYTE_HEADER 3

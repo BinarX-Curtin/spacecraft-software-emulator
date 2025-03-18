@@ -19,6 +19,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "../../../../../../STM32CubeIDE/BinarX_Payload_L433/peripheral_library/peripheral.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -63,10 +65,6 @@ uint8_t data[50000]; // Data array (unsigned 8-bit integers * 50,000 = 400,000 b
 
 //ADC
 uint16_t adc_readings[4];
-ADC_ChannelConfTypeDef ADC_CH_Cfg = {0};
-uint32_t ADC_Channels[4] = {ADC_CHANNEL_0, ADC_CHANNEL_2, ADC_CHANNEL_3, ADC_CHANNEL_8};
-
-
 static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial communication
 uint16_t data_length = 0; 
 
@@ -160,24 +158,38 @@ int main(void)
     // State machine
     if(kCapturingData){
       // Build test data array
-      for(int i = 0; i < 10; i++){
+//      for(int i = 0; i < 10; i++){
+//    	  HAL_ADC_Start(&hadc1);
+//    	  HAL_ADC_PollForConversion(&hadc1, 1);
+//    	  adc_readings[0] = HAL_ADC_GetValue(&hadc1);
+//    	  HAL_ADC_PollForConversion(&hadc1, 1);
+//    	  adc_readings[1] = HAL_ADC_GetValue(&hadc1);
+//    	  HAL_ADC_PollForConversion(&hadc1, 1);
+//    	  adc_readings[2] = HAL_ADC_GetValue(&hadc1);
+//    	  HAL_ADC_PollForConversion(&hadc1, 1);
+//    	  adc_readings[3] = HAL_ADC_GetValue(&hadc1);
+////    	for(int j = 0; j < 4; j++){
+//    		ADC_CH_Cfg.Channel = ADC_Channels[j];        // Select The ADC Channel [i]
+//    		HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg); // Configure The Selected ADC Channel
+//    		HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
+//    		HAL_ADC_PollForConversion(&hadc1, 1);
+//    		adc_readings[j] = HAL_ADC_GetValue(&hadc1);         // Read The ADC Conversion Result
+//    		HAL_Delay(50);
+//    	}
 
-    	for(int j = 0; j < 4; j++){
-    		ADC_CH_Cfg.Channel = ADC_Channels[i];        // Select The ADC Channel [i]
-    		HAL_ADC_ConfigChannel(&hadc1, &ADC_CH_Cfg); // Configure The Selected ADC Channel
-    		HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
-    		HAL_ADC_PollForConversion(&hadc1, 1);
-    		adc_readings[i] = HAL_ADC_GetValue(&hadc1);         // Read The ADC Conversion Result
-    	}
-
+//    	HAL_ADC_Stop(&hadc1);
         // sprintf <- writes a string to a string (csv_line <- "%d,%d,%lu")
         sprintf((char*)csv_line, "%d,%d,%d,%d,%d,%d,%d,%lu\r\n",
         		adc_readings[0], adc_readings[1], adc_readings[2], adc_readings[3],
 				HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_1_Pin), HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_2_Pin),
 				HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_3_Pin), HAL_GetTick());
+//    	  sprintf((char*)csv_line, "%d,%d,%d,%d,%lu\r\n",
+//                		adc_readings[i],
+//        				HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_1_Pin), HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_2_Pin),
+//        				HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_3_Pin), HAL_GetTick());
         // strcat appends a string to the end of the line
-        strcat((char*)data, (char*)csv_line);
-      }
+    	  strcat((char*)data, (char*)csv_line);
+//      }
       // Change state to kTransmitData
       kTransmitData = true;
       kCapturingData = false;
@@ -190,14 +202,12 @@ int main(void)
           data_length++;
         }
       }
-      //
-      //HAL_UART_Transmit_IT(huart6, data, data_length);
       // Prepare metadata and data array
       Transmit(&hspi1, data, data_length, &huart6);
       // Change state to kPayloadReadyToTransmit
       kPayloadReadyToTransmit = true;
       kTransmitData = false;
-
+      strcpy((char*)csv_line, "");
       /* DEBUG SECTION */
 
 
@@ -206,6 +216,16 @@ int main(void)
     }
     else if (kPayloadReadyToTransmit){
       // Wait for emulator to receive data
+    	HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
+    	for(int j = 0; j < 4; j++){
+			HAL_ADC_PollForConversion(&hadc1, 1);
+			adc_readings[j] = HAL_ADC_GetValue(&hadc1);         // Read The ADC Conversion Result
+		}
+		HAL_ADC_Stop(&hadc1);
+		snprintf((char*)csv_line, 51, "%d,%d,%d,%d\r\n", adc_readings[0], adc_readings[1], adc_readings[2], adc_readings[3]);
+		HAL_UART_Transmit(&huart6, csv_line, sizeof(csv_line), 1000);
+		HAL_Delay(1000);
+
     }
     /* USER CODE END WHILE */
 
@@ -276,15 +296,15 @@ static void MX_ADC1_Init(void)
   /** Configure the global features of the ADC (Clock, Resolution, Data Alignment and number of conversion)
   */
   hadc1.Instance = ADC1;
-  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV8;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc1.Init.ScanConvMode = DISABLE;
+  hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = DISABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 4;
   hadc1.Init.DMAContinuousRequests = DISABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
@@ -296,7 +316,34 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_56CYCLES;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Rank = 2;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Rank = 3;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
+  */
+  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
