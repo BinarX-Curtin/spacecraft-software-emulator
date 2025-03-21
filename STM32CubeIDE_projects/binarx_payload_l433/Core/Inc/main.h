@@ -35,7 +35,6 @@ extern "C" {
 #include <stdio.h> // sprintf()
 #include <stdbool.h> // Include the String data type
 #include <stdint.h> // Include the uint data types (uint8_t)
-//#include "peripheral.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

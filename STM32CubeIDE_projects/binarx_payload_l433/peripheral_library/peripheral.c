@@ -30,15 +30,7 @@ void Transmit(uint8_t *data, uint16_t data_size) {
         buffer_data[i + kNumberOfBytesInHeader] = data[i];
       }
     }
-
-    // TODO(tristan): ChipSelect does not change the behaviour. move this line
-    // to ChipSelectInterrupt()
-    
 }
-
-void TransmitCallBackInterrupt() {
-}
-
 
 void ChipSelectInterrupt(SPI_HandleTypeDef *hspi, bool kPayloadReadyToTransmit) {
 	if (kPayloadReadyToTransmit) {
@@ -46,16 +38,3 @@ void ChipSelectInterrupt(SPI_HandleTypeDef *hspi, bool kPayloadReadyToTransmit) 
 	}
 }
 
-/*
-bool TransmitCallBackInterrupt(SPI_HandleTypeDef *hspi1, bool kPayloadReadyToTransmit) {
-	if (kPayloadReadyToTransmit) {
-		HAL_SPI_Transmit_IT(hspi1, buffer_data, bytes_to_send);
-		kTransferComplete = true;
-	}
-	else
-	{
-		kTransferComplete = false;
-	}
-	return kTransferComplete;
-}
-*/

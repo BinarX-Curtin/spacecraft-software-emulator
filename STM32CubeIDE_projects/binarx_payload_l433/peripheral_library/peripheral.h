@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 #include "stm32L4xx_hal.h"
-//#include "main.h"
 #include <stdbool.h>
 
 #define NUM_BYTE_HEADER 3

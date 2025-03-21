@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "peripheral.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -102,6 +102,7 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	  // ensure all data memory is empty
 	  memset(data, '\0', sizeof(data));
+
 	  //Setup data array with title and headings
 	  strcat((char*)data, "Test Data\r\n");
 	  strcat((char*)data, "ADC1,ADC2,ADC3,ADC4,GPIO1,GPIO2,GPIO3,Time\r\n");
@@ -180,8 +181,6 @@ int main(void)
 	      kTransmitData = false;
 	      strcpy((char*)csv_line, "");
 	      /* DEBUG SECTION */
-
-
 
 	      /* END OF DEBUG SECTION */
 	    }
