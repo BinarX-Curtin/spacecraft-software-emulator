@@ -35,6 +35,7 @@ extern "C" {
 #include <stdio.h> // sprintf()
 #include <stdbool.h> // Include the String data type
 #include <stdint.h> // Include the uint data types (uint8_t)
+//#include "peripheral.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -85,7 +86,6 @@ void Error_Handler(void);
 #define DEBUG_USART_RX_GPIO_Port GPIOB
 #define SENSOR_SPI_CS_Pin GPIO_PIN_12
 #define SENSOR_SPI_CS_GPIO_Port GPIOB
-#define SENSOR_SPI_CS_EXTI_IRQn EXTI15_10_IRQn
 #define SENSOR_SPI_SCK_Pin GPIO_PIN_13
 #define SENSOR_SPI_SCK_GPIO_Port GPIOB
 #define SENSOR_SPI_POCI_Pin GPIO_PIN_14

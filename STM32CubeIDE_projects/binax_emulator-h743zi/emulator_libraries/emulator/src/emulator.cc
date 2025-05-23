@@ -32,14 +32,16 @@ void BinarXEmulator::Run() {
   if (!button_pressed_) {
     return;
   }
-  // Turn on payload
+/* OLD Power cycle code **
+  // Turn off payload
   gpo_payload_switch_.SetLow();
   // Yellow LED show's that Payload is Powered
   gpo_yellow_led_.SetLow();
   // Delay to let Payload capacitors discharge
   uint32_t delay = time_controller_.GetTicks() + 3000;
   while(time_controller_.GetTicks() < delay){}
-  
+**********/
+
   BinarXEmulator::RunStartInfo();
 
   // Turn on payload
@@ -67,8 +69,10 @@ void BinarXEmulator::Run() {
     }
   }
 
-//  // Turn off payload
-//  gpo_payload_switch_.SetLow();
+  // Turn off payload
+  gpo_payload_switch_.SetLow();
+  // Turn off Yellow LED to indicate that the payload is off
+  gpo_yellow_led_.SetLow();
 
   // Reset the emulator states
   button_pressed_ = false;
@@ -77,7 +81,7 @@ void BinarXEmulator::Run() {
   BinarXEmulator::RunEndInfo();
 
   // Turn payload on so it can be flashed by the students
-  gpo_payload_switch_.SetHigh();
+  // gpo_payload_switch_.SetHigh();
 }
 
 void BinarXEmulator::PayloadCommunicationHandler() {
@@ -173,9 +177,9 @@ void BinarXEmulator::PayloadCommunicationHandler() {
 
 void BinarXEmulator::Init() {
   // turn on Yellow LED
-  gpo_yellow_led_.SetHigh();
+  gpo_yellow_led_.SetLow();
   // Power the payload so it can be flashed
-  gpo_payload_switch_.SetHigh();
+  gpo_payload_switch_.SetLow();
   // Set chip select to low
   gpo_payload_chip_select_.SetHigh();
 }

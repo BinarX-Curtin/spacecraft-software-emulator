@@ -18,7 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "peripheral.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -64,6 +64,9 @@ uint8_t data[10000]; // Data array (unsigned 8-bit integers * 10,000 = 80,000 bi
 uint16_t adc_readings[4];
 static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial communication
 uint16_t data_length = 0;
+
+uint8_t rad_data[3];
+uint8_t transmitdata = 255;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,11 +104,11 @@ int main(void)
 
   /* USER CODE BEGIN 1 */
 	  // ensure all data memory is empty
-	  memset(data, '\0', sizeof(data));
+	memset(data, '\0', sizeof(data));
 
 	  //Setup data array with title and headings
-	  strcat((char*)data, "Test Data\r\n");
-	  strcat((char*)data, "ADC1,ADC2,ADC3,ADC4,GPIO1,GPIO2,GPIO3,Time\r\n");
+	strcat((char*)data, "Test Data\r\n");
+	strcat((char*)data, "ADC1,ADC2,ADC3,ADC4,GPIO1,GPIO2,GPIO3,Time\r\n");
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -133,18 +136,38 @@ int main(void)
   MX_ADC1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  uint8_t write_buf[1] = {0b10000000 | 0x00};
+  uint8_t read_buf[21] = {0};
+  HAL_Delay(1000);
+  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_RESET); // CS LOW
+  HAL_SPI_Transmit(&hspi2, write_buf, sizeof(write_buf), 1000);
+  HAL_SPI_Receive(&hspi2, read_buf, sizeof(read_buf), 1000);
+  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_SET); // CS High
+  HAL_UART_Transmit(&huart3, read_buf, sizeof(read_buf), 1000);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
+//	  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_RESET); // CS LOW
+//	  HAL_UART_Transmit(&huart3, "CS RESET\r\n", sizeof("CS RESET\r\n"), 1000);
+	  //HAL_SPI_Transmit()
+	  //HAL_SPI_Transmit(&hspi2,transmitdata,sizeof(transmitdata),1000);
+	  //HAL_SPI_Receive(&hspi2,rad_data,sizeof(rad_data),1000);
+
+
+//	  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_SET);
+//	  HAL_UART_Transmit(&huart3, "CS SET\r\n", sizeof("CS SET\r\n"), 1000);
+	  //HAL_Delay(1000);
+	  //
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	    // State machine
-	    if(kCapturingData){
+	    /*if(kCapturingData){
 	      // Build test data array
 	    	for(int i = 0; i < 10; i++){
 				HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
@@ -155,7 +178,7 @@ int main(void)
 				sprintf((char*)csv_line, "%d,%d,%d,%d,%d,%d,%d,%lu\r\n",
 								adc_readings[0], adc_readings[1], adc_readings[2], adc_readings[3],
 								HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_1_Pin), HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_2_Pin),
-								HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_3_Pin), HAL_GetTick());
+								HAL_GPIO_ReadPin(GPIOA, SENSOR_GPIO_3_Pin), HAL_GetTick());
 				HAL_UART_Transmit(&huart3, csv_line, sizeof(csv_line), 1000);
 		        // strcat appends a string to the end of the line
 				strcat((char*)data, (char*)csv_line);
@@ -180,14 +203,11 @@ int main(void)
 	      kPayloadReadyToTransmit = true;
 	      kTransmitData = false;
 	      strcpy((char*)csv_line, "");
-	      /* DEBUG SECTION */
-
-	      /* END OF DEBUG SECTION */
 	    }
 	    else if (kPayloadReadyToTransmit){
 	      // Wait for emulator to receive data
 			HAL_Delay(1000);
-	    }
+	    }*/
   }
   /* USER CODE END 3 */
 }
@@ -435,7 +455,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -543,10 +563,13 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(FC_GPIO_1_GPIO_Port, FC_GPIO_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, FC_GPIO_4_Pin|FC_GPIO_3_Pin|SENSOR_GPIO_3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, FC_GPIO_4_Pin|FC_GPIO_3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, FC_GPIO_2_Pin|SENSOR_GPIO_2_Pin|SENSOR_GPIO_1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(FC_GPIO_2_GPIO_Port, FC_GPIO_2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SENSOR_SPI_CS_GPIO_Port, SENSOR_SPI_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : FC_GPIO_1_Pin */
   GPIO_InitStruct.Pin = FC_GPIO_1_Pin;
@@ -555,8 +578,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(FC_GPIO_1_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FC_GPIO_4_Pin FC_GPIO_3_Pin SENSOR_GPIO_3_Pin */
-  GPIO_InitStruct.Pin = FC_GPIO_4_Pin|FC_GPIO_3_Pin|SENSOR_GPIO_3_Pin;
+  /*Configure GPIO pins : FC_GPIO_4_Pin FC_GPIO_3_Pin */
+  GPIO_InitStruct.Pin = FC_GPIO_4_Pin|FC_GPIO_3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -568,18 +591,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(SPI1_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : FC_GPIO_2_Pin SENSOR_GPIO_2_Pin SENSOR_GPIO_1_Pin */
-  GPIO_InitStruct.Pin = FC_GPIO_2_Pin|SENSOR_GPIO_2_Pin|SENSOR_GPIO_1_Pin;
+  /*Configure GPIO pins : FC_GPIO_2_Pin SENSOR_SPI_CS_Pin */
+  GPIO_InitStruct.Pin = FC_GPIO_2_Pin|SENSOR_SPI_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : SENSOR_SPI_CS_Pin */
-  GPIO_InitStruct.Pin = SENSOR_SPI_CS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  /*Configure GPIO pin : SENSOR_GPIO_3_Pin */
+  GPIO_InitStruct.Pin = SENSOR_GPIO_3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(SENSOR_SPI_CS_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(SENSOR_GPIO_3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : SENSOR_GPIO_2_Pin SENSOR_GPIO_1_Pin */
+  GPIO_InitStruct.Pin = SENSOR_GPIO_2_Pin|SENSOR_GPIO_1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SENSOR_GPIO_INT_Pin */
   GPIO_InitStruct.Pin = SENSOR_GPIO_INT_Pin;
@@ -593,9 +622,6 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
-
-  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
