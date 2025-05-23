@@ -62,11 +62,9 @@ uint8_t data[10000]; // Data array (unsigned 8-bit integers * 10,000 = 80,000 bi
 
 //ADC
 uint16_t adc_readings[4];
+
 static uint8_t csv_line[51] = ""; // Static 50 character buffer for serial communication
 uint16_t data_length = 0;
-
-uint8_t rad_data[3];
-uint8_t transmitdata = 255;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -84,6 +82,7 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/* Flight computer SPI Communication Interrupt */
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
   switch (GPIO_Pin) {
     case SPI1_CS_Pin:
@@ -103,12 +102,13 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-	  // ensure all data memory is empty
-	memset(data, '\0', sizeof(data));
+  // ensure all data memory is empty
+  memset(data, '\0', sizeof(data));
 
-	  //Setup data array with title and headings
-	strcat((char*)data, "Test Data\r\n");
-	strcat((char*)data, "ADC1,ADC2,ADC3,ADC4,GPIO1,GPIO2,GPIO3,Time\r\n");
+  //Setup data array with title and headings
+  strcat((char*)data, "Test Data\r\n");
+  strcat((char*)data, "ADC1,ADC2,ADC3,ADC4,GPIO1,GPIO2,GPIO3,Time\r\n");
+
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -136,14 +136,7 @@ int main(void)
   MX_ADC1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-  uint8_t write_buf[1] = {0b10000000 | 0x00};
-  uint8_t read_buf[21] = {0};
-  HAL_Delay(1000);
-  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_RESET); // CS LOW
-  HAL_SPI_Transmit(&hspi2, write_buf, sizeof(write_buf), 1000);
-  HAL_SPI_Receive(&hspi2, read_buf, sizeof(read_buf), 1000);
-  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_SET); // CS High
-  HAL_UART_Transmit(&huart3, read_buf, sizeof(read_buf), 1000);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -151,39 +144,38 @@ int main(void)
   while (1)
   {
 
-//	  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_RESET); // CS LOW
-//	  HAL_UART_Transmit(&huart3, "CS RESET\r\n", sizeof("CS RESET\r\n"), 1000);
-	  //HAL_SPI_Transmit()
-	  //HAL_SPI_Transmit(&hspi2,transmitdata,sizeof(transmitdata),1000);
-	  //HAL_SPI_Receive(&hspi2,rad_data,sizeof(rad_data),1000);
-
-
-//	  HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_SET);
-//	  HAL_UART_Transmit(&huart3, "CS SET\r\n", sizeof("CS SET\r\n"), 1000);
-	  //HAL_Delay(1000);
-	  //
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 	    // State machine
-	    /*if(kCapturingData){
-	      // Build test data array
-	    	for(int i = 0; i < 10; i++){
-				HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
-				for(int j = 0; j < 4; j++){
-					adc_readings[j] = HAL_ADC_GetValue(&hadc1);         // Read The ADC Conversion Result
-				}
+	  if(kCapturingData){
+		  /* Place your data collection code here*/
 
-				sprintf((char*)csv_line, "%d,%d,%d,%d,%d,%d,%d,%lu\r\n",
-								adc_readings[0], adc_readings[1], adc_readings[2], adc_readings[3],
-								HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_1_Pin), HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_2_Pin),
-								HAL_GPIO_ReadPin(GPIOA, SENSOR_GPIO_3_Pin), HAL_GetTick());
-				HAL_UART_Transmit(&huart3, csv_line, sizeof(csv_line), 1000);
-		        // strcat appends a string to the end of the line
-				strcat((char*)data, (char*)csv_line);
-				HAL_Delay(1000);
-	    	}
+		  /* Example code reading all 3 GPIO Ports and 4 ADC Channels */
+		  // Build test data array
+		  for(int i = 0; i < 10; i++){
+			  HAL_ADC_Start(&hadc1);                         // Start ADC Conversion @ Selected Channel
+			  for(int j = 0; j < 4; j++){
+				  adc_readings[j] = HAL_ADC_GetValue(&hadc1);         // Read The ADC Conversion Result
+			  }
+			  // Empty the CSV_line to avoid unintended characters
+			  memset(csv_line,0,sizeof(csv_line));
+			  // This line overwrites the csv_line string with the 4 ADC readings, the 3 GPIO ports and current runtime
+			  sprintf((char*)csv_line, "%d,%d,%d,%d,%d,%d,%d,%lu\r\n",
+					  adc_readings[0], adc_readings[1], adc_readings[2], adc_readings[3],
+					  HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_1_Pin), HAL_GPIO_ReadPin(GPIOB, SENSOR_GPIO_2_Pin),
+					  HAL_GPIO_ReadPin(GPIOA, SENSOR_GPIO_3_Pin), HAL_GetTick());
+
+			  /* Start of capturing data payload debugging code remove on flight ready code */
+			  HAL_UART_Transmit(&huart3, csv_line, sizeof(csv_line), 1000);
+			  /* End of capturing payload debugging code remove on flight ready code */
+
+		      // strcat appends a string to the end of the line
+			  strcat((char*)data, (char*)csv_line);
+			  HAL_Delay(1000); //Wait One Second before gathering more data
+		  }
+
+		  /*End of Example code*/
 
 	      // Change state to kTransmitData
 	      kTransmitData = true;
@@ -207,7 +199,7 @@ int main(void)
 	    else if (kPayloadReadyToTransmit){
 	      // Wait for emulator to receive data
 			HAL_Delay(1000);
-	    }*/
+	    }
   }
   /* USER CODE END 3 */
 }
