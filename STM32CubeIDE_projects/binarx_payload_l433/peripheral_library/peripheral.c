@@ -7,6 +7,23 @@
 
 #include "peripheral.h"
 
+/**> Max payload data size allowed */
+const uint16_t kMaxPayloadDataLength = 10000;
+/**> Packet Length*/
+const uint16_t kPacketLength = 250;
+/**> Sync byte value used to determine if The SPI transmission failed*/
+const uint8_t kSyncByte = 5;
+/**< the number of bytes in the payload header*/
+const uint8_t kNumberOfBytesInHeader = 3;
+/**< Size of the data plus any bytes extra to fill all required packets that
+   * must be sent to the emulator */
+uint16_t bytes_to_send;
+
+/** Array used to construct message for SPI communication to Controller */
+uint8_t buffer_data[NUM_BYTE_HEADER+MAX_PAYLOAD_DATA_LENGTH];
+
+bool kTransferComplete;
+
 void Transmit(uint8_t *data, uint16_t data_size) {
     // Calculate number of packets
     //uint16_t data_size = sizeof(data) / sizeof(data[0]);

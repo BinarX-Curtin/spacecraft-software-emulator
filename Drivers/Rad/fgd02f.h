@@ -13,7 +13,8 @@
  extern "C" {
  #endif
  
- #include <stdint.h>
+#include <stdint.h>
+#include <stddef.h>  // <-- Add this
  
  // Register map.
  #define TEMP 0x00   //  Temperature monitor
@@ -41,18 +42,21 @@
 // REG VALUES
 #define CHIPID_VAL 0x01          // Product ID.
 
+#define READ 0x80
+#define WRITE 0x40
+
  /**
   * @brief A datatype for a function pointer for writing to the mmc5983ma device.
   *
   */
- typedef uint32_t (*fgd02f_write_ptr)(const uint8_t *write_buf, const uint32_t len);
+ typedef uint32_t (*fgd02f_write_ptr)(const uint8_t *write_buf, const uint16_t len);
  
  /**
   * @brief A datatype for a function pointer for reading from the FGD-02F
   * device.
   *
   */
- typedef uint32_t (*fgd02f_read_ptr)(uint8_t *read_buf, const uint32_t len);
+ typedef uint32_t (*fgd02f_read_ptr)(uint8_t *read_buf, const uint16_t len);
  
  /**
   * @brief Specifies the read and write implementations for interacting with the
@@ -63,29 +67,33 @@
     fgd02f_write_ptr write_command;
     fgd02f_read_ptr read_command;
  } fgd02f_t;
+
+ extern fgd02f_t _dosimeter;
  
- 
+  /**
+    * @brief Initialise the FGD-02F device.
+    *
+    */
+ void FGD02FInit();
+
+
  /**
   * @brief Write data to register.
   *
-  * @param dosimeter Dosimeter read/write interface.
   * @param write_buf Pointer to buffer to write.
   * @param len Length of message.
   * @return uint32_t Number of bytes written.
   */
- uint32_t FGD02FWrite(const fgd02f_t *dosimeter, uint8_t *write_buf,
-                         uint16_t len);
+ uint32_t FGD02FWrite(uint8_t *write_buf, uint16_t len);
  
  /**
   * @brief Read data from the device.
   *
-  * @param magnetometer Dosimeter read/write interface.
   * @param read_buf Pointer to buffer to store data read.
   * @param len Number of bytes to read.
   * @return uint32_t Number of bytes read.
   */
- uint32_t Mmc5983maRead(const fgd02f_t *dosimeter, uint8_t *read_buf,
-                        uint16_t len);
+ uint32_t FGD02FRead(uint8_t *read_buf, uint16_t len);
  
  /**
   * @brief Get the product ID.
@@ -93,7 +101,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint8_t Product ID.
   */
- uint8_t GetPid(const fgd02f_t *dosimeter);
+ uint8_t GetPid();
  
  /**
   * @brief Get sensor counter measurement.
@@ -101,7 +109,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint32_t SensorCounter(const fgd02f_t *dosimeter);
+ uint32_t GetSensor();
 
   /**
   * @brief Get reference counter measurement.
@@ -109,7 +117,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint32_t ReferenceCounter(const fgd02f_t *dosimeter);
+ uint32_t GetReference();
 
  
  /**
@@ -118,55 +126,8 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint32_t TemperatureMeasurement(const fgd02f_t *dosimeter);
+ uint8_t GetTemp();
  
- /**
-  * @brief Get the magnetic field measurement.
-  *
-  * @param magnetometer Magnetometer read/write interface.
-  * @return field_axes_t The values read from the device.
-  */
- field_axes_t GetField(const fgd02f_t *dosimeter);
- 
- /**
-  * @brief Get the sampled temperature.
-  *
-  * @param magnetometer Magnetometer read/write interface.
-  * @return uint8_t The raw temperature read from the device.
-  */
- uint8_t GetTemp(const mmc5983ma_t *dosimeter);
- 
- /**
-  * @brief Clear the magnetic field interrupt.
-  *
-  * @param magnetometer Magnetometer read/write interface.
-  * @return uint132_t The number of bytes written to the device.
-  */
- uint32_t ClearMagFieldInt(const mmc5983ma_t *dosimeter);
- 
- /**
-  * @brief Clear the temperature interrupt.
-  *
-  * @param magnetometer Magnetometer read/write interface.
-  * @return uint32_t The number of bytes written to the device.
-  */
- uint32_t ClearTempInt(const mmc5983ma_t *magnetometer);
- 
- /**
-  * @brief Provide a large set current to the sensor coils for 500ns.
-  *
-  * @param magnetometer Magnetometer read/write interface
-  * @return uint32_t The number of bytes written to the device.
-  */
- uint32_t Set(const mmc5983ma_t *magnetometer);
- 
- /**
-  * @brief Provide a large reset current to the sensor coils for 500ns.
-  *
-  * @param magnetometer Magnetometer read/write interface
-  * @return uint32_t The number of bytes written to the device.
-  */
- uint32_t Reset(const mmc5983ma_t *magnetometer);
  
  #ifdef __cplusplus
  }
