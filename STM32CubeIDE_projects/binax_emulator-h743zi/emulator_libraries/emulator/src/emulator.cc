@@ -32,15 +32,6 @@ void BinarXEmulator::Run() {
   if (!button_pressed_) {
     return;
   }
-/* OLD Power cycle code **
-  // Turn off payload
-  gpo_payload_switch_.SetLow();
-  // Yellow LED show's that Payload is Powered
-  gpo_yellow_led_.SetLow();
-  // Delay to let Payload capacitors discharge
-  uint32_t delay = time_controller_.GetTicks() + 3000;
-  while(time_controller_.GetTicks() < delay){}
-**********/
 
   BinarXEmulator::RunStartInfo();
 
@@ -62,7 +53,7 @@ void BinarXEmulator::Run() {
           payload_status_ != PayloadDataStatus::kTransferCompleted)
   {
     // Check if the payload data collection time has elapsed
-    if(payload_communication_runtime < time_controller_.GetTicks())
+    if(payload_communication_runtime < time_controller_.GetTicks() || payload_status_ == PayloadDataStatus::kPayloadReady)
     {
       // Run the communication function
       PayloadCommunicationHandler();

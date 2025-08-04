@@ -74,12 +74,15 @@ void Error_Handler(void);
 #define USB_OTG_FS_PWR_EN_GPIO_Port GPIOD
 #define Payload_Chip_Select_Pin GPIO_PIN_14
 #define Payload_Chip_Select_GPIO_Port GPIOD
-#define Payload_Ready_Pin GPIO_PIN_15
-#define Payload_Ready_GPIO_Port GPIOD
-#define Payload_Ready_EXTI_IRQn EXTI15_10_IRQn
+#define Payload_Ready2_Pin GPIO_PIN_15
+#define Payload_Ready2_GPIO_Port GPIOD
+#define Payload_Ready2_EXTI_IRQn EXTI15_10_IRQn
 #define USB_OTG_FS_OVCR_Pin GPIO_PIN_7
 #define USB_OTG_FS_OVCR_GPIO_Port GPIOG
 #define USB_OTG_FS_OVCR_EXTI_IRQn EXTI9_5_IRQn
+#define Payload_Ready_Pin GPIO_PIN_12
+#define Payload_Ready_GPIO_Port GPIOG
+#define Payload_Ready_EXTI_IRQn EXTI15_10_IRQn
 #define LD2_Pin GPIO_PIN_1
 #define LD2_GPIO_Port GPIOE
 

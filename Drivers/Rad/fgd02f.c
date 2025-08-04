@@ -43,7 +43,7 @@ void FGD02FInit(const fgd02f_t dosimeter){
   write_buf[1] = 0b00000000;
   FGD02FWrite(write_buf, sizeof(write_buf));
 
-  write_buf[0] = (WRITE | TARGET);  // Set target frequency to current reference
+  write_buf[0] = (WRITE | TARGET);  // Set target frequency to current reference 50kHz
   write_buf[1] = 0b00110011;
   FGD02FWrite(write_buf, sizeof(write_buf));
 
