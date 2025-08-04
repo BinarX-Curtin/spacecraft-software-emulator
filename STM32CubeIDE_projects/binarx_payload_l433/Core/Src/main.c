@@ -191,6 +191,10 @@ int main(void)
 	      }
 	      // Prepare metadata and data array
 	      Transmit(data, data_length);
+
+        // Set data ready line high
+	      HAL_GPIO_WritePin(GPIOC, FC_GPIO_1_Pin, GPIO_PIN_SET);
+        
 	      // Change state to kPayloadReadyToTransmit
 	      kPayloadReadyToTransmit = true;
 	      kTransmitData = false;
