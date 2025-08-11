@@ -15,6 +15,8 @@
  
 #include <stdint.h>
 #include <stddef.h>  // <-- Add this
+#include "stm32L4xx_hal.h"
+#include "main.h"
  
  // Register map.
  #define TEMP 0x00   //  Temperature monitor
@@ -45,56 +47,12 @@
 #define READ 0x80
 #define WRITE 0x40
 
- /**
-  * @brief A datatype for a function pointer for writing to the mmc5983ma device.
-  *
-  */
- typedef uint32_t (*fgd02f_write_ptr)(const uint8_t *write_buf, const uint16_t len);
- 
- /**
-  * @brief A datatype for a function pointer for reading from the FGD-02F
-  * device.
-  *
-  */
- typedef uint32_t (*fgd02f_read_ptr)(uint8_t *read_buf, const uint16_t len);
- 
- /**
-  * @brief Specifies the read and write implementations for interacting with the
-  * FGD-02F.
-  *
-  */
- typedef struct {
-    fgd02f_write_ptr write_command;
-    fgd02f_read_ptr read_command;
- } fgd02f_t;
-
- extern fgd02f_t _dosimeter;
- 
   /**
     * @brief Initialise the FGD-02F device.
     *
     */
- void FGD02FInit();
+ void FGD02FInit(SPI_HandleTypeDef *hspi);
 
-
- /**
-  * @brief Write data to register.
-  *
-  * @param write_buf Pointer to buffer to write.
-  * @param len Length of message.
-  * @return uint32_t Number of bytes written.
-  */
- uint32_t FGD02FWrite(uint8_t *write_buf, uint16_t len);
- 
- /**
-  * @brief Read data from the device.
-  *
-  * @param read_buf Pointer to buffer to store data read.
-  * @param len Number of bytes to read.
-  * @return uint32_t Number of bytes read.
-  */
- uint32_t FGD02FRead(uint8_t *read_buf, uint16_t len);
- 
  /**
   * @brief Get the product ID.
   *
