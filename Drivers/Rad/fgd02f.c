@@ -15,7 +15,7 @@ void FGD02FInit(SPI_HandleTypeDef *hspi_pntr){
 	hspi = hspi_pntr;
 
   // Check if the device ID matches the expected value
-  uint8_t pID = GetPid();
+  uint8_t pID = GetRadPid();
   if (pID != CHIPID_VAL) {
     // Handle error: incorrect device ID
     return;
@@ -77,7 +77,7 @@ void FGD02FInit(SPI_HandleTypeDef *hspi_pntr){
   HAL_GPIO_WritePin(GPIOB, SENSOR_SPI_CS_Pin, GPIO_PIN_SET); // CS HIGH
 }
 
-uint8_t GetPid() {
+uint8_t GetRadPid() {
   uint8_t write_buf[2] = {READ | CHIPID,0x00};
   uint8_t read_buf[2] = {0};
 
@@ -88,7 +88,7 @@ uint8_t GetPid() {
   return read_buf[1];
 }
  
- uint32_t GetReference() {
+ uint32_t GetRadReference() {
    uint8_t write_buf[4] = {READ | F1R_1,0x00,0x00,0x00};
 
    uint8_t read_buf[4] = {0};
@@ -102,7 +102,7 @@ uint8_t GetPid() {
    return reference;
  }
 
- uint32_t GetSensor() {
+ uint32_t GetRadSensor() {
    uint8_t write_buf[4] = {READ | F1S_1,0x00,0x00,0x00};
 
    uint8_t read_buf[4] = {0};
@@ -116,7 +116,7 @@ uint8_t GetPid() {
    return sensor;
  }
 
- uint8_t GetTemp() {
+ uint8_t GetRadTemp() {
     uint8_t write_buf[2] = {READ | TEMP,0x00};
 
     uint8_t read_buf[2] = {0};

@@ -20,7 +20,7 @@ uint32_t Mmc5983maRead(const mmc5983ma_t *magnetometer, uint8_t *read_buf,
   return magnetometer->read_command(read_buf, len);
 }
 
-uint8_t GetPid(const mmc5983ma_t *magnetometer) {
+uint8_t GetMagPid(const mmc5983ma_t *magnetometer) {
   uint8_t write_buf[1] = {PRODUCT_ID};
   uint8_t read_buf[1] = {0};
 
@@ -40,7 +40,7 @@ uint32_t TemperatureMeasurement(const mmc5983ma_t *magnetometer) {
   return Mmc5983maWrite(magnetometer, write_buf, sizeof(write_buf));
 }
 
-field_axes_t GetField(const mmc5983ma_t *magnetometer) {
+field_axes_t GetMagField(const mmc5983ma_t *magnetometer) {
   uint8_t write_buf[1] = {X_OUT_0};
 
   uint8_t read_buf[6] = {0};
@@ -58,7 +58,7 @@ field_axes_t GetField(const mmc5983ma_t *magnetometer) {
   return axes_readings;
 }
 
-uint8_t GetTemp(const mmc5983ma_t *magnetometer) {
+uint8_t GetMagTemp(const mmc5983ma_t *magnetometer) {
   uint8_t write_buf[1] = {TEMP_OUT};
   uint8_t read_buf[1] = {0};
 

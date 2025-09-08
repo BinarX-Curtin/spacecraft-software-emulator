@@ -59,7 +59,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint8_t Product ID.
   */
- uint8_t GetPid();
+ uint8_t GetRadPid();
  
  /**
   * @brief Get sensor counter measurement.
@@ -67,7 +67,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint32_t GetSensor();
+ uint32_t GetRadSensor();
 
   /**
   * @brief Get reference counter measurement.
@@ -75,7 +75,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint32_t GetReference();
+ uint32_t GetRadReference();
 
  
  /**
@@ -84,7 +84,7 @@
   * @param dosimeter Dosimeter read/write interface.
   * @return uint32_t Number of bytes written to the device.
   */
- uint8_t GetTemp();
+ uint8_t GetRadTemp();
  
  
  #ifdef __cplusplus

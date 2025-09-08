@@ -57,7 +57,7 @@ bool kCapturingData = true; // Capture payload data and process it
 bool kTransmitData = false; // Transmit payload (peripheral) data to the Emulator (controller)
 bool kPayloadReadyToTransmit = false; // Wait for the Emulator (controller) to receive the data
 // DATA ARRAY BUILDER
-// There is a maximum data array size determined by the F4's RAM
+// There is a maximum data array size determined by the L4's RAM
 uint8_t data[10000]; // Data array (unsigned 8-bit integers * 10,000 = 80,000 bits)
 
 //ADC

@@ -100,7 +100,7 @@ uint32_t Mmc5983maRead(const mmc5983ma_t *magnetometer, uint8_t *read_buf,
  * @param magnetometer Magnetometer read/write interface.
  * @return uint8_t Product ID.
  */
-uint8_t GetPid(const mmc5983ma_t *magnetometer);
+uint8_t GetMagPid(const mmc5983ma_t *magnetometer);
 
 /**
  * @brief Perform a magnetic field measurement.
@@ -124,7 +124,7 @@ uint32_t TemperatureMeasurement(const mmc5983ma_t *magnetometer);
  * @param magnetometer Magnetometer read/write interface.
  * @return field_axes_t The values read from the device.
  */
-field_axes_t GetField(const mmc5983ma_t *magnetometer);
+field_axes_t GetMagField(const mmc5983ma_t *magnetometer);
 
 /**
  * @brief Get the sampled temperature.
@@ -132,7 +132,7 @@ field_axes_t GetField(const mmc5983ma_t *magnetometer);
  * @param magnetometer Magnetometer read/write interface.
  * @return uint8_t The raw temperature read from the device.
  */
-uint8_t GetTemp(const mmc5983ma_t *magnetometer);
+uint8_t GetMagTemp(const mmc5983ma_t *magnetometer);
 
 /**
  * @brief Clear the magnetic field interrupt.
