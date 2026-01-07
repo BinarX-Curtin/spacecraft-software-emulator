@@ -111,8 +111,8 @@ void BinarXEmulator::PayloadCommunicationHandler() {
   //if (payload_status_ == PayloadDataStatus::kPayloadReady) 
   if(payload_status_ != PayloadDataStatus::kErrorWithMetadataPacket)
   {
-    const uint16_t kDataSize =
-        ((uint16_t)packet_buffer[1] << 8) | packet_buffer[2];
+    const uint32_t kDataSize =
+        ((uint32_t)packet_buffer[1] << 24) | ((uint32_t)packet_buffer[2] << 16) | ((uint32_t)packet_buffer[3] << 8) | packet_buffer[4];
     uint16_t num_of_packets = CalculateNumberOfPackets(kDataSize);
     if (kDataSize > kMaxPayloadDataLength || kDataSize == 0) 
     {

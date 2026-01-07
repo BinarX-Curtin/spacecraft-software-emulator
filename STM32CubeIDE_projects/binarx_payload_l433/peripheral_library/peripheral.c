@@ -36,10 +36,12 @@ void Transmit(uint8_t *data, uint16_t data_size) {
     // calculate size of data transfered
     bytes_to_send = num_packets * kPacketLength + kNumberOfBytesInHeader;
 
-    // Populate the header
-    buffer_data[0] = kSyncByte;
-    buffer_data[1] = data_size >> 8;
-    buffer_data[2] = data_size;
+    // Populate the header for 32-bit length (LITTLE-ENDIAN)
+        buffer_data[0] = kSyncByte;
+        buffer_data[1] = data_size;       // Least Significant Byte (LSB)
+        buffer_data[2] = data_size >> 8;
+        buffer_data[3] = data_size >> 16;
+        buffer_data[4] = data_size >> 24; // Most Significant Byte (MSB)
 
     // fill the buffer with the data
     if (data_size <= kMaxPayloadDataLength) {
